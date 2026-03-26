@@ -1,6 +1,26 @@
 [build]
   publish = "."
 
+[[redirects]]
+  from = "/stories"
+  to = "/stories/"
+  status = 301
+
+[[redirects]]
+  from = "/portfolio"
+  to = "/portfolio/"
+  status = 301
+
+[[redirects]]
+  from = "/community"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/contact"
+  to = "/contact/"
+  status = 301
+
 [[headers]]
   for = "/*"
   [headers.values]
