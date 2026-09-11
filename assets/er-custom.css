@@ -1,0 +1,500 @@
+/* ---------------------------------------------------------------
+   er-custom.css — bespoke sections layered on top of the exported
+   Squarespace theme. Everything here is prefixed .er- so it can
+   never collide with the generated theme CSS.
+   Palette is taken from the site theme:
+     accent      hsl(237.14, 100%, 62.94%)
+     dark accent hsl(243.87, 40.26%, 15.1%)
+   Fonts: Ubuntu (headings) / Cabin (body), same as the theme.
+--------------------------------------------------------------- */
+
+.er-section {
+  --er-accent: hsl(237.14, 100%, 62.94%);
+  --er-ink: #ffffff;
+  --er-muted: rgba(255, 255, 255, 0.72);
+  --er-line: rgba(255, 255, 255, 0.16);
+  --er-card: rgba(255, 255, 255, 0.04);
+  background: #000;
+  color: var(--er-ink);
+  padding: clamp(56px, 8vw, 118px) 0;
+  font-family: "Cabin", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  position: relative;
+  z-index: 1;
+}
+
+.er-section--light {
+  --er-ink: #0c0c14;
+  --er-muted: rgba(12, 12, 20, 0.72);
+  --er-line: rgba(12, 12, 20, 0.14);
+  --er-card: rgba(12, 12, 20, 0.03);
+  background: #ffffff;
+}
+
+.er-section--tint {
+  --er-ink: #ffffff;
+  --er-muted: rgba(255, 255, 255, 0.78);
+  --er-line: rgba(255, 255, 255, 0.22);
+  --er-card: rgba(255, 255, 255, 0.08);
+  background: hsl(243.87, 40.26%, 15.1%);
+}
+
+.er-wrap {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-inline: max(6vw, 20px);
+  box-sizing: border-box;
+}
+
+.er-eyebrow {
+  font-family: "Cabin", Helvetica, Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--er-accent);
+  margin: 0 0 18px;
+}
+
+.er-section--tint .er-eyebrow { color: #a9adff; }
+
+.er-h2 {
+  font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(1.9rem, 4.2vw, 3.1rem);
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  margin: 0 0 20px;
+  color: var(--er-ink);
+  max-width: 20ch;
+}
+
+.er-lede {
+  font-size: clamp(1.02rem, 1.35vw, 1.2rem);
+  line-height: 1.6;
+  color: var(--er-muted);
+  max-width: 64ch;
+  margin: 0 0 8px;
+}
+
+.er-head { margin-bottom: clamp(36px, 5vw, 60px); }
+
+/* ---- buttons ---- */
+.er-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 30px 0 0;
+  align-items: center;
+}
+
+.er-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 30px;
+  border-radius: 999px;
+  background: var(--er-accent);
+  color: #fff !important;
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.2;
+  text-decoration: none !important;
+  border: 1px solid var(--er-accent);
+  transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+}
+
+.er-btn:hover { transform: translateY(-2px); opacity: 0.92; }
+
+.er-btn--ghost {
+  background: transparent;
+  color: var(--er-ink) !important;
+  border: 1px solid var(--er-line);
+}
+
+.er-btn--ghost:hover { border-color: var(--er-accent); }
+
+.er-btn--invert {
+  background: #fff;
+  border-color: #fff;
+  color: hsl(243.87, 40.26%, 15.1%) !important;
+}
+
+.er-note {
+  font-size: 0.92rem;
+  color: var(--er-muted);
+  margin: 18px 0 0;
+}
+
+/* ---- cards ---- */
+.er-grid {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+}
+
+.er-grid--2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+
+.er-card {
+  border: 1px solid var(--er-line);
+  border-radius: 20px;
+  background: var(--er-card);
+  padding: clamp(24px, 3vw, 34px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.er-card h3 {
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--er-ink);
+}
+
+.er-card p { margin: 0; color: var(--er-muted); line-height: 1.6; font-size: 1rem; }
+
+.er-card .er-meta {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--er-line);
+  font-size: 0.86rem;
+  color: var(--er-muted);
+  display: grid;
+  gap: 6px;
+}
+
+.er-card .er-meta strong {
+  color: var(--er-ink);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.er-card-link {
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  color: var(--er-accent) !important;
+  text-decoration: none !important;
+  font-size: 0.95rem;
+  border-bottom: 1px solid transparent;
+  align-self: flex-start;
+}
+
+.er-card-link:hover { border-bottom-color: var(--er-accent); }
+
+/* ---- stat strip ---- */
+.er-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 152px), 1fr));
+  gap: 8px 22px;
+  margin-top: clamp(34px, 4vw, 52px);
+  border-top: 1px solid var(--er-line);
+  padding-top: 30px;
+}
+
+.er-stat b {
+  display: block;
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  line-height: 1.1;
+  font-weight: 500;
+  color: var(--er-ink);
+}
+
+.er-stat span {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--er-muted);
+}
+
+/* ---- deep dive blocks ---- */
+.er-dive {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 64px);
+  padding: clamp(34px, 4vw, 54px) 0;
+  border-top: 1px solid var(--er-line);
+  align-items: start;
+}
+
+.er-dive:last-child { padding-bottom: 0; }
+
+@media (max-width: 860px) {
+  .er-dive { grid-template-columns: 1fr; }
+}
+
+.er-dive h3 {
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: clamp(1.5rem, 2.8vw, 2.15rem);
+  line-height: 1.12;
+  margin: 0 0 18px;
+  color: var(--er-ink);
+}
+
+.er-dive .er-kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--er-accent);
+  margin: 0 0 12px;
+}
+
+.er-dive p { color: var(--er-muted); line-height: 1.68; margin: 0 0 16px; font-size: 1.02rem; }
+.er-dive p:last-child { margin-bottom: 0; }
+.er-dive a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.er-dive a:hover { color: var(--er-accent); }
+
+.er-proof {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.er-proof li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--er-muted);
+}
+
+.er-proof li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--er-accent);
+}
+
+.er-proof li b { display: inline; color: var(--er-ink); font-weight: 600; }
+
+.er-takeaway {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-left: 2px solid var(--er-accent);
+  background: var(--er-card);
+  border-radius: 0 12px 12px 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--er-muted);
+}
+
+.er-takeaway strong { color: var(--er-ink); }
+
+/* ---- topic list ---- */
+.er-topics { display: grid; gap: 0; margin-top: 10px; }
+
+.er-topic {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: clamp(14px, 3vw, 48px);
+  padding: 26px 0;
+  border-top: 1px solid var(--er-line);
+  align-items: baseline;
+}
+
+.er-topic:last-child { border-bottom: 1px solid var(--er-line); }
+
+@media (max-width: 760px) {
+  .er-topic { grid-template-columns: 1fr; gap: 8px; }
+}
+
+.er-topic h3 {
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: 1.22rem;
+  line-height: 1.25;
+  margin: 0;
+  color: var(--er-ink);
+}
+
+.er-topic p { margin: 0; color: var(--er-muted); line-height: 1.6; }
+.er-topic span {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--er-accent);
+}
+
+/* ---- closing CTA ---- */
+.er-cta { text-align: center; }
+.er-cta .er-h2 { margin-inline: auto; max-width: 22ch; }
+.er-cta .er-lede { margin-inline: auto; }
+.er-cta .er-actions { justify-content: center; }
+
+/* ---- hero add-ons (inside the theme's hero text block) ---- */
+.er-hero-cta { margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 12px; }
+
+.er-hero-cta a {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 26px;
+  border-radius: 999px;
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: 0.98rem;
+  text-decoration: none !important;
+  background: hsl(237.14, 100%, 62.94%);
+  color: #fff !important;
+  border: 1px solid hsl(237.14, 100%, 62.94%);
+  transition: transform 0.18s ease;
+}
+
+.er-hero-cta a + a {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.er-hero-cta a:hover { transform: translateY(-2px); }
+
+.er-hero-note {
+  margin: 14px 0 0;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---- websites index page ---- */
+.er-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 34px;
+}
+
+.er-filter {
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: 0.88rem;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--er-line);
+  background: transparent;
+  color: var(--er-muted);
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.er-filter:hover { border-color: var(--er-accent); color: var(--er-ink); }
+
+.er-filter[aria-pressed="true"] {
+  background: var(--er-accent);
+  border-color: var(--er-accent);
+  color: #fff;
+}
+
+.er-sites {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+}
+
+.er-site {
+  border: 1px solid var(--er-line);
+  border-radius: 18px;
+  background: var(--er-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.er-site h3 {
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: 1.15rem;
+  margin: 0;
+  color: var(--er-ink);
+  line-height: 1.25;
+}
+
+.er-site p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--er-muted);
+}
+
+.er-site .er-url {
+  margin-top: auto;
+  padding-top: 12px;
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  color: var(--er-accent) !important;
+  text-decoration: none !important;
+  word-break: break-word;
+}
+
+.er-site .er-url:hover { text-decoration: underline !important; }
+
+.er-site .er-url--none {
+  color: var(--er-muted) !important;
+  font-style: italic;
+}
+
+.er-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--er-muted);
+  border: 1px solid var(--er-line);
+  border-radius: 999px;
+  padding: 5px 11px;
+}
+
+.er-sites-group { margin-bottom: clamp(40px, 5vw, 68px); }
+
+.er-sites-group h2 {
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  margin: 0 0 8px;
+  color: var(--er-ink);
+}
+
+.er-sites-group > p {
+  color: var(--er-muted);
+  max-width: 64ch;
+  margin: 0 0 26px;
+  line-height: 1.6;
+}
+
+.er-sites-group[hidden] { display: none; }
+
+/* the exported theme sets some inline tags to display:block — undo it here */
+.er-section b,
+.er-section strong,
+.er-section em,
+.er-section span:not(.er-tag) { display: inline; }
+
+.er-section .er-stat span,
+.er-section .er-topic span,
+.er-section .er-card .er-meta span { display: block; }
+
+/* The exported theme's scroll-reveal JS hides text until a chunk that is not
+   always available finishes loading. These sections opt out entirely. */
+.er-section .animation-segment-parent-hidden,
+.er-section .animation-segment-hidden,
+.er-section [class*="animation-segment"],
+.er-section .preFlex,
+.er-section .preFade,
+.er-section .preScale,
+.er-section .preSlide,
+.er-hero-cta,
+.er-hero-note {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+
+/* first section on a page has to clear the fixed, transparent header */
+.er-section--first { padding-top: clamp(120px, 17vh, 210px); }
