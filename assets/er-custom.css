@@ -498,3 +498,59 @@
 
 /* first section on a page has to clear the fixed, transparent header */
 .er-section--first { padding-top: clamp(120px, 17vh, 210px); }
+
+/* ---- past speaking engagements ---- */
+.er-gigs-head {
+  margin-top: clamp(46px, 6vw, 76px);
+  padding-top: clamp(30px, 4vw, 46px);
+  border-top: 1px solid var(--er-line);
+}
+
+.er-gigs-head h3 {
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  line-height: 1.15;
+  margin: 0 0 10px;
+  color: var(--er-ink);
+}
+
+.er-gigs {
+  list-style: none;
+  margin: 26px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0 clamp(20px, 4vw, 56px);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
+}
+
+.er-gig {
+  display: grid;
+  grid-template-columns: 4.2rem minmax(0, 1fr);
+  gap: 14px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--er-line);
+}
+
+.er-gig-year {
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--er-accent);
+  white-space: nowrap;
+}
+
+.er-gig-body { font-size: 0.97rem; line-height: 1.45; color: var(--er-muted); }
+.er-gig-body b { color: var(--er-ink); font-weight: 600; }
+.er-gig-body a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--er-line); }
+.er-gig-body a:hover { border-bottom-color: var(--er-accent); }
+.er-gig-body em { font-style: normal; display: block; font-size: 0.9rem; opacity: 0.8; }
+.er-gig-note { font-size: 0.84rem; opacity: 0.75; white-space: nowrap; }
+
+.er-card .er-meta a {
+  color: var(--er-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--er-line);
+}
+
+.er-card .er-meta a:hover { border-bottom-color: var(--er-accent); }
