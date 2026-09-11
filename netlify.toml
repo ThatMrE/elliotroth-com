@@ -13,6 +13,16 @@
   status = 301
 
 [[redirects]]
+  from = "/portfolio/websites"
+  to = "/portfolio/websites/"
+  status = 301
+
+[[redirects]]
+  from = "/websites"
+  to = "/portfolio/websites/"
+  status = 301
+
+[[redirects]]
   from = "/community"
   to = "/"
   status = 301
