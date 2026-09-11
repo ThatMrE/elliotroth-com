@@ -554,3 +554,139 @@
 }
 
 .er-card .er-meta a:hover { border-bottom-color: var(--er-accent); }
+
+/* ---- watch a talk ---- */
+.er-watch {
+  margin-top: clamp(46px, 6vw, 76px);
+  padding-top: clamp(30px, 4vw, 46px);
+  border-top: 1px solid var(--er-line);
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .er-watch { grid-template-columns: 1fr; }
+}
+
+.er-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--er-line);
+}
+
+.er-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.er-video-caption {
+  margin: 12px 0 0;
+  font-size: 0.88rem;
+  color: var(--er-muted);
+}
+
+.er-media {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+
+.er-media li {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--er-line);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--er-muted);
+}
+
+.er-media a {
+  color: var(--er-ink);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--er-line);
+}
+
+.er-media a:hover { border-bottom-color: var(--er-accent); }
+.er-media .er-media-meta { display: block; font-size: 0.84rem; opacity: 0.8; margin-top: 2px; }
+
+/* ---- recognition + press ---- */
+.er-credits {
+  margin-top: clamp(46px, 6vw, 76px);
+  padding-top: clamp(30px, 4vw, 46px);
+  border-top: 1px solid var(--er-line);
+}
+
+.er-pills {
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.er-pills li { margin: 0; }
+
+.er-pills a,
+.er-pills span {
+  display: inline-block;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--er-line);
+  font-size: 0.88rem;
+  line-height: 1.3;
+  color: var(--er-muted);
+  text-decoration: none;
+}
+
+.er-pills a:hover { border-color: var(--er-accent); color: var(--er-ink); }
+.er-pills b { color: var(--er-ink); font-weight: 600; }
+.er-pills .er-pill-year { opacity: 0.65; font-size: 0.8rem; }
+
+/* ---- testimonial cards (template, switched on when real quotes exist) ---- */
+.er-quote { gap: 18px; }
+
+.er-quote blockquote {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--er-ink);
+}
+
+.er-quote blockquote::before { content: "\201C"; }
+.er-quote blockquote::after { content: "\201D"; }
+
+.er-quote figcaption {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--er-line);
+  font-size: 0.88rem;
+  color: var(--er-muted);
+}
+
+.er-quote figcaption b { display: block; color: var(--er-ink); font-weight: 600; }
+.er-section .er-quote figcaption span { display: block; }
+
+/* headings inside custom sections always take the section ink colour */
+.er-section h3 { color: var(--er-ink); }
+
+.er-watch h3,
+.er-credits h3 {
+  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  line-height: 1.15;
+  margin: 0 0 10px;
+}
+
+.er-section .er-media .er-media-meta { display: block; }
