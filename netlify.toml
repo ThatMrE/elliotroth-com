@@ -22,6 +22,17 @@
   to = "/portfolio/websites/"
   status = 301
 
+# the flat exports are duplicates of the folder URLs
+[[redirects]]
+  from = "/contact.html"
+  to = "/contact/"
+  status = 301
+
+[[redirects]]
+  from = "/portfolio.html"
+  to = "/portfolio/"
+  status = 301
+
 [[redirects]]
   from = "/community"
   to = "/"

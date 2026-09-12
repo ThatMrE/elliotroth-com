@@ -544,7 +544,7 @@
 .er-gig-body b { color: var(--er-ink); font-weight: 600; }
 .er-gig-body a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--er-line); }
 .er-gig-body a:hover { border-bottom-color: var(--er-accent); }
-.er-gig-body em { font-style: normal; display: block; font-size: 0.9rem; opacity: 0.8; }
+.er-section .er-gig-body .er-gig-sub { display: block; font-size: 0.9rem; opacity: 0.8; }
 .er-gig-note { font-size: 0.84rem; opacity: 0.75; white-space: nowrap; }
 
 .er-card .er-meta a {
@@ -690,3 +690,87 @@
 }
 
 .er-section .er-media .er-media-meta { display: block; }
+
+/* =========================================================
+   Typography guards, applied site-wide.
+
+   The exported theme sets `font-family: Ubuntu` and
+   `font-family: Cabin` with no fallback at all, so the moment
+   Google Fonts is slow, blocked or unavailable every heading
+   drops to the browser's default serif. These rules give both
+   faces a real sans-serif stack, and turn italics off.
+   ========================================================= */
+
+:root {
+  --er-sans: "Ubuntu", "Helvetica Neue", Helvetica, Arial, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --er-sans-body: "Cabin", "Helvetica Neue", Helvetica, Arial, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6,
+.sqsrte-scaled-text,
+.sqsrte-scaled-text h1,
+.header-title-text a,
+.header-nav-item a,
+.header-menu-nav-item a,
+.header-menu-nav-item-content,
+.sqs-block-button-element,
+.list-item-content__title,
+.list-item-content__button,
+.accordion-item__title,
+.user-items-list-item-container .list-item-content__title {
+  font-family: var(--er-sans) !important;
+}
+
+body,
+.sqs-html-content,
+.sqs-html-content p,
+.sqs-html-content li,
+.list-item-content__description,
+.accordion-item__description,
+.sqs-block-form .field-element,
+.form-item .field-element {
+  font-family: var(--er-sans-body);
+}
+
+/* no italics anywhere */
+#page em, #page i, #page cite, #page blockquote,
+header em, header i,
+#footer-sections em, #footer-sections i,
+h1, h2, h3, h4, h5, h6,
+.er-section em, .er-section i, .er-section blockquote,
+.sqs-html-content em, .sqs-html-content i {
+  font-style: normal !important;
+}
+
+/* ---- elsewhere strip in the closing CTA ---- */
+.er-elsewhere {
+  margin-top: clamp(34px, 5vw, 54px);
+  padding-top: clamp(26px, 3vw, 38px);
+  border-top: 1px solid var(--er-line);
+}
+
+.er-elsewhere .er-pills { justify-content: center; }
+.er-elsewhere .er-note { margin-top: 20px; }
+.er-elsewhere .er-note a { color: var(--er-ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---- site thumbnails ---- */
+.er-shot {
+  display: block;
+  margin: -4px 0 4px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--er-line);
+  background: #0b0b12;
+  aspect-ratio: 16 / 10;
+}
+
+.er-shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* cards without a screenshot shouldn't stretch a hole above their link */
+.er-site:not(:has(.er-shot)) .er-url { margin-top: 18px; }
