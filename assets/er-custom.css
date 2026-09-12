@@ -774,3 +774,289 @@ h1, h2, h3, h4, h5, h6,
 
 /* cards without a screenshot shouldn't stretch a hole above their link */
 .er-site:not(:has(.er-shot)) .er-url { margin-top: 18px; }
+
+/* ---------------------------------------------------------
+   Every font variable the theme defines is re-pointed at a full
+   sans-serif stack. The exported CSS assigns bare family names
+   ("Ubuntu", "Cabin", "Raleway", "Space Grotesk") with no fallback,
+   so any font hiccup drops the whole page to the browser default
+   serif. Nothing on this site should ever render in a serif.
+   --------------------------------------------------------- */
+:root {
+  --announcement-bar-font-font-family: var(--er-sans-body) !important;
+  --blog-alternating-side-by-side-list-excerpt-font-font-family: var(--er-sans-body) !important;
+  --blog-alternating-side-by-side-list-meta-font-font-family: var(--er-sans-body) !important;
+  --blog-alternating-side-by-side-list-title-font-font-family: var(--er-sans) !important;
+  --blog-basic-grid-list-excerpt-font-font-family: var(--er-sans-body) !important;
+  --blog-basic-grid-list-meta-font-font-family: var(--er-sans-body) !important;
+  --blog-basic-grid-list-title-font-font-family: var(--er-sans) !important;
+  --blog-grid-masonry-list-excerpt-font-font-family: var(--er-sans-body) !important;
+  --blog-grid-masonry-list-meta-font-font-family: var(--er-sans-body) !important;
+  --blog-grid-masonry-list-title-font-font-family: var(--er-sans) !important;
+  --blog-item-author-profile-font-font-family: var(--er-sans-body) !important;
+  --blog-item-meta-font-font-family: var(--er-sans-body) !important;
+  --blog-item-pagination-font-font-family: var(--er-sans-body) !important;
+  --blog-item-title-font-font-family: var(--er-sans) !important;
+  --blog-side-by-side-list-excerpt-font-font-family: var(--er-sans-body) !important;
+  --blog-side-by-side-list-meta-font-font-family: var(--er-sans-body) !important;
+  --blog-side-by-side-list-title-font-font-family: var(--er-sans) !important;
+  --blog-single-column-list-excerpt-font-font-family: var(--er-sans-body) !important;
+  --blog-single-column-list-meta-font-font-family: var(--er-sans-body) !important;
+  --blog-single-column-list-title-font-font-family: var(--er-sans) !important;
+  --body-font-font-family: var(--er-sans-body) !important;
+  --content-link-block-title-font-font-family: var(--er-sans) !important;
+  --cookie-banner-disclaimer-font-font-family: var(--er-sans-body) !important;
+  --course-item-chapter-name-font-font-family: var(--er-sans) !important;
+  --course-item-lesson-name-font-font-family: var(--er-sans) !important;
+  --course-item-name-font-font-family: var(--er-sans) !important;
+  --course-item-name-mobile-font-font-family: var(--er-sans) !important;
+  --course-item-side-nav-chapter-meta-font-font-family: var(--er-sans) !important;
+  --course-item-side-nav-chapter-name-font-font-family: var(--er-sans) !important;
+  --course-item-side-nav-lesson-meta-font-font-family: var(--er-sans) !important;
+  --course-item-side-nav-lesson-name-font-font-family: var(--er-sans) !important;
+  --course-list-chapter-item-chapter-meta-font-font-family: var(--er-sans-body) !important;
+  --course-list-chapter-item-chapter-name-font-font-family: var(--er-sans) !important;
+  --course-list-course-description-font-font-family: var(--er-sans-body) !important;
+  --course-list-course-item-lesson-excerpt-font-font-family: var(--er-sans-body) !important;
+  --course-list-course-item-lesson-meta-font-font-family: var(--er-sans-body) !important;
+  --course-list-course-item-lesson-name-font-font-family: var(--er-sans) !important;
+  --course-list-course-name-font-font-family: var(--er-sans) !important;
+  --course-list-grid-layout-chapter-meta-font-font-family: var(--er-sans-body) !important;
+  --course-list-grid-layout-chapter-name-font-font-family: var(--er-sans) !important;
+  --course-list-grid-layout-course-item-excerpt-font-font-family: var(--er-sans-body) !important;
+  --course-list-grid-layout-course-item-meta-font-font-family: var(--er-sans-body) !important;
+  --course-list-grid-layout-course-item-name-font-font-family: var(--er-sans) !important;
+  --events-item-pagination-date-font-font-family: var(--er-sans-body) !important;
+  --events-item-pagination-font-font-family: var(--er-sans-body) !important;
+  --form-block-caption-text-font-font-family: var(--er-sans-body) !important;
+  --form-block-description-text-font-font-family: var(--er-sans-body) !important;
+  --form-block-input-text-font-font-family: var(--er-sans-body) !important;
+  --form-block-option-text-font-font-family: var(--er-sans-body) !important;
+  --form-block-placeholder-text-font-font-family: var(--er-sans-body) !important;
+  --form-block-select-dropdown-text-font-font-family: var(--er-sans-body) !important;
+  --form-block-survey-title-text-font-font-family: var(--er-sans) !important;
+  --form-block-title-text-font-font-family: var(--er-sans) !important;
+  --header-button-font-font-family: var(--er-sans) !important;
+  --heading-font-font-family: var(--er-sans) !important;
+  --list-section-title-text-font-font-family: var(--er-sans) !important;
+  --menu-block-item-description-font-font-family: var(--er-sans-body) !important;
+  --menu-block-item-price-font-font-family: var(--er-sans-body) !important;
+  --menu-block-item-title-font-font-family: var(--er-sans) !important;
+  --menu-block-nav-font-font-family: var(--er-sans) !important;
+  --menu-block-title-font-font-family: var(--er-sans) !important;
+  --meta-font-font-family: var(--er-sans-body) !important;
+  --mobile-site-title-font-font-family: var(--er-sans) !important;
+  --newsletter-block-button-text-font-font-family: var(--er-sans) !important;
+  --newsletter-block-description-text-font-font-family: var(--er-sans-body) !important;
+  --newsletter-block-field-text-font-font-family: var(--er-sans-body) !important;
+  --newsletter-block-footnote-text-font-font-family: var(--er-sans-body) !important;
+  --newsletter-block-title-text-font-font-family: var(--er-sans) !important;
+  --portfolio-grid-basic-title-font-font-family: var(--er-sans) !important;
+  --portfolio-grid-overlay-title-font-font-family: var(--er-sans) !important;
+  --portfolio-hover-follow-title-font-font-family: var(--er-sans) !important;
+  --portfolio-hover-static-title-font-font-family: var(--er-sans) !important;
+  --portfolio-index-background-title-font-font-family: var(--er-sans) !important;
+  --portfolio-item-pagination-font-font-family: var(--er-sans-body) !important;
+  --primary-button-font-font-family: var(--er-sans) !important;
+  --product-basic-item-add-ons-title-font-font-family: var(--er-sans) !important;
+  --product-basic-item-add-ons-title-full-layout-font-font-family: var(--er-sans) !important;
+  --product-basic-item-add-ons-title-half-layout-font-font-family: var(--er-sans) !important;
+  --product-basic-item-add-ons-title-wrap-layout-font-font-family: var(--er-sans) !important;
+  --product-basic-item-description-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-description-full-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-description-half-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-description-wrap-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-price-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-price-full-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-price-half-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-price-wrap-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-restock-notification-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-restock-notification-full-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-restock-notification-half-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-restock-notification-wrap-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-scarcity-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-scarcity-full-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-scarcity-half-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-scarcity-wrap-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-title-font-font-family: var(--er-sans) !important;
+  --product-basic-item-title-full-layout-font-font-family: var(--er-sans) !important;
+  --product-basic-item-title-half-layout-font-font-family: var(--er-sans) !important;
+  --product-basic-item-title-wrap-layout-font-font-family: var(--er-sans) !important;
+  --product-basic-item-variant-fields-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-variant-fields-full-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-variant-fields-half-layout-font-font-family: var(--er-sans-body) !important;
+  --product-basic-item-variant-fields-wrap-layout-font-font-family: var(--er-sans-body) !important;
+  --product-block-description-font-font-family: var(--er-sans-body) !important;
+  --product-block-price-font-font-family: var(--er-sans-body) !important;
+  --product-block-title-font-font-family: var(--er-sans) !important;
+  --product-grid-text-below-price-font-font-family: var(--er-sans-body) !important;
+  --product-grid-text-below-scarcity-font-font-family: var(--er-sans-body) !important;
+  --product-grid-text-below-status-font-font-family: var(--er-sans-body) !important;
+  --product-grid-text-below-title-font-font-family: var(--er-sans) !important;
+  --product-list-description-font-font-family: var(--er-sans-body) !important;
+  --quote-block-source-font-font-family: var(--er-sans-body) !important;
+  --quote-block-text-font-font-family: var(--er-sans-body) !important;
+  --secondary-button-font-font-family: var(--er-sans) !important;
+  --site-navigation-font-font-family: var(--er-sans) !important;
+  --site-title-font-font-family: var(--er-sans) !important;
+  --tertiary-button-font-font-family: var(--er-sans) !important;
+  --video-basic-grid-list-category-nav-font-font-family: var(--er-sans) !important;
+  --video-basic-grid-list-excerpt-font-font-family: var(--er-sans-body) !important;
+  --video-basic-grid-list-meta-font-font-family: var(--er-sans-body) !important;
+  --video-basic-grid-list-title-font-font-family: var(--er-sans) !important;
+  --video-item-description-font-font-family: var(--er-sans-body) !important;
+  --video-item-meta-font-font-family: var(--er-sans-body) !important;
+  --video-item-pagination-font-font-family: var(--er-sans-body) !important;
+  --video-item-title-font-font-family: var(--er-sans) !important;
+  --video-preview-badge-font-font-family: var(--er-sans-body) !important;
+}
+
+/* Low-specificity catch-all: anything the variables miss still lands on a
+   sans stack. Icon fonts are set by class-based rules and win over this. */
+body, p, li, td, th, dd, dt, label, figcaption, blockquote, small, strong, b, a, cite,
+input, textarea, select, button, .sqs-block, .sqs-block-content {
+  font-family: var(--er-sans-body);
+}
+
+h1, h2, h3, h4, h5, h6, .sqsrte-scaled-text { font-family: var(--er-sans); }
+
+/* ---------------------------------------------------------
+   The theme hides most text until its scroll-reveal script
+   runs. That script lives on a remote CDN, so a slow network,
+   a privacy blocker or an outage leaves whole sections blank.
+   Content is visible by default now; the animation, when it
+   runs, has nothing left to hide.
+   --------------------------------------------------------- */
+.preFlex, .preFade, .preScale, .preSlide, .preClip,
+[class*="animation-segment"],
+.sqs-block-animation--complete,
+[data-animation-role] {
+  opacity: 1 !important;
+  transform: none !important;
+  clip-path: none !important;
+  visibility: visible !important;
+}
+
+/* ---- practice areas (static replacement for the JS carousel) ---- */
+.er-areas {
+  display: grid;
+  gap: 2px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  border-top: 1px solid var(--er-line);
+}
+
+.er-area {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--er-line);
+  padding-right: clamp(12px, 3vw, 40px);
+}
+
+.er-area h3 {
+  font-family: var(--er-sans);
+  font-size: 1.08rem;
+  margin: 0 0 6px;
+  color: var(--er-ink);
+}
+
+.er-area p { margin: 0; color: var(--er-muted); font-size: 0.96rem; line-height: 1.5; }
+
+/* ---------------------------------------------------------
+   Portfolio gallery. The theme's masonry controller ships from
+   a remote CDN; without it every image stacked full-width and
+   the page ran to 24,000px. This lays the same images out as a
+   grid in CSS, with no script involved.
+   --------------------------------------------------------- */
+.gallery-masonry-wrapper {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-inline: max(6vw, 20px);
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) { .gallery-masonry-wrapper { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .gallery-masonry-wrapper { grid-template-columns: 1fr; } }
+
+.gallery-masonry-item,
+.gallery-masonry-item-wrapper {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.gallery-masonry-item img {
+  position: static !important;
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+
+.gallery-masonry { height: auto !important; }
+
+/* ---------------------------------------------------------
+   Section dividers. The export applies
+   `clip-path: url(#section-divider-…)` to .section-border for a
+   decorative pointed edge. The referenced clipPath never resolves,
+   so the clip removes the section's entire background — which is
+   why the portfolio hero rendered as black text on black. The
+   decoration is not worth a blank section.
+   --------------------------------------------------------- */
+.section-border,
+.page-section .section-border,
+.has-section-divider .section-border {
+  clip-path: none !important;
+}
+
+.section-divider-block,
+.section-divider-svg-clip { display: none !important; }
+
+.has-section-divider { padding-bottom: 0 !important; }
+
+/* Gallery items are revealed by the masonry controller setting
+   data-show. Without it they sat at opacity 0. */
+.gallery-masonry-item .gallery-masonry-item-wrapper,
+.gallery-grid-item .gallery-grid-item-wrapper,
+.gallery-strips-item .gallery-strips-item-wrapper,
+.gallery-reel-item .gallery-reel-item-wrapper {
+  opacity: 1 !important;
+  animation-name: none !important;
+}
+
+/* ---------------------------------------------------------
+   Theme buttons and form fields. The export ships
+   `primary-button-shape-custom` and
+   `form-submit-button-style-circle`, which render the Send
+   button as a lopsided petal. Everything clickable now uses the
+   same pill as the rest of the site.
+   --------------------------------------------------------- */
+.sqs-button-element--primary,
+.sqs-block-button-element,
+.form-button-wrapper button,
+.form-wrapper input[type="submit"],
+button.button {
+  border-radius: 999px !important;
+  clip-path: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  padding: 14px 30px !important;
+  font-family: var(--er-sans) !important;
+  letter-spacing: 0.02em;
+}
+
+.form-wrapper .field-element,
+.form-wrapper input[type="text"],
+.form-wrapper input[type="email"],
+.form-wrapper textarea {
+  border-radius: 12px !important;
+  font-family: var(--er-sans-body) !important;
+}
+
+.form-wrapper .title { font-family: var(--er-sans) !important; }
