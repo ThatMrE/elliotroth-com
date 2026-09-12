@@ -35,8 +35,9 @@
 
 [[redirects]]
   from = "/community"
-  to = "/"
+  to = "https://biopunk.community/"
   status = 301
+  force = true
 
 [[redirects]]
   from = "/contact"
