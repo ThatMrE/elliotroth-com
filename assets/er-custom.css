@@ -753,27 +753,7 @@ h1, h2, h3, h4, h5, h6,
 .er-elsewhere .er-note { margin-top: 20px; }
 .er-elsewhere .er-note a { color: var(--er-ink); text-decoration: underline; text-underline-offset: 3px; }
 
-/* ---- site thumbnails ---- */
-.er-shot {
-  display: block;
-  margin: -4px 0 4px;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--er-line);
-  background: #0b0b12;
-  aspect-ratio: 16 / 10;
-}
 
-.er-shot img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-}
-
-/* cards without a screenshot shouldn't stretch a hole above their link */
-.er-site:not(:has(.er-shot)) .er-url { margin-top: 18px; }
 
 /* ---------------------------------------------------------
    Every font variable the theme defines is re-pointed at a full
@@ -1060,3 +1040,112 @@ button.button {
 }
 
 .form-wrapper .title { font-family: var(--er-sans) !important; }
+
+/* ---------------------------------------------------------
+   Websites slider. One screenshot at a time, so nothing can
+   overlap. It is a scroll-snap track first: swipe or scroll
+   works with no script at all, and the script only adds
+   auto-advance and the buttons.
+   --------------------------------------------------------- */
+.er-slider { margin: 0 0 clamp(36px, 5vw, 60px); }
+
+.er-slider-head { margin-bottom: 18px; }
+
+.er-slider-head h3 {
+  font-family: var(--er-sans);
+  font-size: clamp(1.3rem, 2.2vw, 1.8rem);
+  margin: 0;
+  color: var(--er-ink);
+}
+
+.er-slider-frame {
+  border: 1px solid var(--er-line);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #07070d;
+}
+
+.er-slider-track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.er-slider-track::-webkit-scrollbar { display: none; }
+
+.er-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  position: relative;
+  margin: 0;
+}
+
+.er-slide-link {
+  display: block;
+  position: relative;
+  text-decoration: none;
+}
+
+.er-slide img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.er-slide-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  padding: 14px 18px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
+  font-family: var(--er-sans);
+  color: #fff;
+}
+
+.er-section .er-slide-caption b { color: #fff; font-weight: 600; font-size: 1rem; }
+.er-section .er-slide-caption span { color: rgba(255, 255, 255, 0.75); font-size: 0.85rem; }
+
+.er-slider-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.er-slider-btn {
+  font-family: var(--er-sans);
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--er-line);
+  background: transparent;
+  color: var(--er-muted);
+  cursor: pointer;
+}
+
+.er-slider-btn:hover { border-color: var(--er-accent); color: var(--er-ink); }
+
+.er-slider-count {
+  margin: 0 auto 0 6px;
+  font-family: var(--er-sans);
+  font-size: 0.88rem;
+  color: var(--er-muted);
+}
+
+@media (max-width: 600px) {
+  .er-slider-controls { flex-wrap: wrap; }
+  .er-slider-count { margin: 0; order: -1; width: 100%; }
+}
