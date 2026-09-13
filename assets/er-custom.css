@@ -1149,3 +1149,116 @@ button.button {
   .er-slider-controls { flex-wrap: wrap; }
   .er-slider-count { margin: 0; order: -1; width: 100%; }
 }
+
+/* ---------------------------------------------------------
+   Icons. One inline sprite per page, drawn in currentColor,
+   so they cost no requests and follow the text they sit with.
+   --------------------------------------------------------- */
+.er-icon {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -0.12em;
+}
+
+.er-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--er-line);
+  color: var(--er-accent);
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+
+.er-kicker .er-icon { font-size: 1.15em; margin-right: 4px; }
+.er-eyebrow .er-icon { font-size: 1.2em; margin-right: 5px; }
+.er-btn .er-icon { font-size: 1.15em; margin-right: 2px; }
+.er-slider-btn .er-icon { font-size: 1.05em; vertical-align: -0.18em; }
+
+/* ---- instagram ---- */
+.er-ig {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+
+.er-ig-follow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 180px;
+  padding: 28px;
+  border: 1px solid var(--er-line);
+  border-radius: 18px;
+  background: var(--er-card);
+  text-decoration: none;
+  font-family: var(--er-sans);
+}
+
+.er-section .er-ig-follow b { color: var(--er-ink); font-size: 1.15rem; }
+.er-section .er-ig-follow span { color: var(--er-accent); font-size: 0.92rem; }
+.er-ig-follow:hover { border-color: var(--er-accent); }
+
+.er-ig iframe {
+  width: 100%;
+  min-height: 480px;
+  border: 1px solid var(--er-line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+/* ---------------------------------------------------------
+   Phones. Tighter rhythm, fewer columns, bigger tap targets.
+   --------------------------------------------------------- */
+@media (max-width: 600px) {
+  .er-section { padding: clamp(40px, 11vw, 64px) 0; }
+  .er-section--first { padding-top: clamp(96px, 22vw, 140px); }
+
+  .er-h2 { font-size: clamp(1.65rem, 7.5vw, 2.1rem); max-width: 100%; }
+  .er-lede { font-size: 1rem; }
+  .er-head { margin-bottom: 28px; }
+
+  .er-grid { gap: 14px; }
+  .er-card { padding: 22px; border-radius: 16px; }
+
+  .er-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 16px; padding-top: 24px; }
+  .er-stat b { font-size: 1.5rem; }
+  .er-stat span { font-size: 0.8rem; }
+
+  .er-dive { padding: 26px 0; gap: 20px; }
+  .er-takeaway { padding: 14px 16px; }
+
+  .er-actions { gap: 10px; }
+  .er-btn { padding: 14px 22px; font-size: 0.95rem; }
+
+  .er-gigs { gap: 0; }
+  .er-gig { grid-template-columns: 3.4rem minmax(0, 1fr); gap: 10px; padding: 10px 0; }
+
+  .er-pills { gap: 8px; }
+  .er-pills a, .er-pills span { padding: 8px 13px; font-size: 0.82rem; }
+
+  .er-areas { gap: 0; }
+  .er-sites { gap: 14px; }
+  .er-site { padding: 20px; }
+
+  .er-slider-frame { border-radius: 14px; }
+  .er-slide-caption { padding: 11px 14px; }
+}
+
+/* every control stays a comfortable tap target */
+@media (pointer: coarse) {
+  .er-btn, .er-slider-btn, .er-filter, .er-card-link, .er-url { min-height: 44px; display: inline-flex; align-items: center; }
+  .er-slider-btn { padding-inline: 18px; }
+}
