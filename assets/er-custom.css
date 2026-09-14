@@ -3,13 +3,13 @@
    Squarespace theme. Everything here is prefixed .er- so it can
    never collide with the generated theme CSS.
    Palette is taken from the site theme:
-     accent      var(--er-algae)
+     accent      var(--er-acid)
      dark accent hsl(243.87, 40.26%, 15.1%)
    Fonts: Ubuntu (headings) / Cabin (body), same as the theme.
 --------------------------------------------------------------- */
 
 .er-section {
-  --er-accent: var(--er-algae);
+  --er-accent: var(--er-acid);
   --er-ink: #ffffff;
   --er-muted: rgba(255, 255, 255, 0.72);
   --er-line: rgba(255, 255, 255, 0.16);
@@ -56,7 +56,7 @@
   margin: 0 0 18px;
 }
 
-.er-section--tint .er-eyebrow { color: var(--er-algae); }
+.er-section--tint .er-eyebrow { color: var(--er-acid); }
 
 .er-h2 {
   font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -346,9 +346,9 @@
   font-size: 0.98rem;
   font-weight: 600;
   text-decoration: none !important;
-  background: var(--er-algae);
-  color: #04150e !important;
-  border: 1px solid var(--er-algae);
+  background: var(--er-acid);
+  color: #0b0b0b !important;
+  border: 2px solid var(--er-acid);
   transition: transform 0.18s ease;
 }
 
@@ -1266,168 +1266,676 @@ button.button {
   .er-slider-btn { padding-inline: 18px; }
 }
 
-/* =========================================================
-   BIOPUNK LAYER
-   The consulting site was wearing a borrowed suit: corporate
-   indigo, no voice. Elliot already solved his own personality
-   problem on elliotroth.me — a lab notebook that behaves like a
-   live culture. This ports that language onto a hire-me spine.
 
-   Palette and type are lifted from elliotroth.me so the two
-   sites read as one person.
+/* =========================================================
+   XEROX LAYER — the gig flyer
+   Deliberately not elliotroth.me. That site is a lab notebook:
+   algae green, monospace, numbered sections, a live culture.
+   This one is the flyer stapled to the telephone pole: acid
+   yellow and hot magenta on black, heavy stacked caps, torn
+   edges, halftone, stickers, a ticker that never stops.
    ========================================================= */
 
 :root {
-  --er-algae: #3defa4;
-  --er-algae-dim: #1fa974;
-  --er-cherry: #ff5fa2;
-  --er-amber: #ffc46b;
-  --er-violet: #9b8cff;
-  --er-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  /* the theme's own accent, re-pointed so buttons, links and form
-     focus rings follow the same green instead of Squarespace indigo */
-  --accent-hsl: 154.7, 84.7%, 58.8%;
-  --safeDarkAccent-hsl: 154.7, 84.7%, 58.8%;
+  --er-acid: #f2ff3d;
+  --er-hot: #ff2d6f;
+  --er-paper: #f5f2e8;
+  --er-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --accent-hsl: 66, 100%, 62%;
+  --safeDarkAccent-hsl: 66, 100%, 62%;
 }
 
-.er-section {
-  --er-accent: var(--er-algae);
+.er-section { --er-accent: var(--er-acid); }
+.er-section--light { --er-accent: #8a0038; }
+
+/* ---- headings: stacked, tight, shouted ---- */
+.er-h2 {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+  font-size: clamp(2.1rem, 5.6vw, 4rem);
+  max-width: 16ch;
 }
 
-.er-section--light { --er-accent: #0f7a4f; }
+.er-dive h3,
+.er-gigs-head h3,
+.er-watch h3,
+.er-credits h3,
+.er-slider-head h3 {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 0.98;
+}
 
-/* keep text legible on the bright green */
-.er-btn,
+/* ---- labels are rubber-stamped, not numbered ---- */
+.er-eyebrow {
+  display: inline-block;
+  font-family: var(--er-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #0b0b0b;
+  background: var(--er-acid);
+  padding: 5px 10px;
+  transform: rotate(-1.4deg);
+  margin-bottom: 20px;
+}
+
+.er-section--light .er-eyebrow { background: var(--er-hot); color: #fff; }
+.er-section--tint .er-eyebrow { background: var(--er-acid); color: #0b0b0b; }
+.er-eyebrow .er-icon { color: currentColor; }
+
+.er-kicker {
+  font-family: var(--er-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--er-hot);
+}
+
+/* ---- buttons: sticker slabs, not pills ---- */
+.er-btn {
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  font-size: 0.92rem;
+  background: var(--er-acid);
+  border: 2px solid var(--er-acid);
+  color: #0b0b0b !important;
+  box-shadow: 4px 4px 0 var(--er-hot);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.er-btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--er-hot); }
+
+.er-btn--ghost {
+  background: transparent;
+  border-color: currentColor;
+  color: var(--er-ink) !important;
+  box-shadow: none;
+}
+
+.er-btn--ghost:hover { background: var(--er-ink); color: #0b0b0b !important; transform: none; }
+.er-btn--invert { background: var(--er-paper); border-color: var(--er-paper); color: #0b0b0b !important; }
+
 .sqs-button-element--primary,
 .form-button-wrapper button,
 button.button {
-  color: #04150e !important;
-  font-weight: 600;
+  border-radius: 2px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700 !important;
+  color: #0b0b0b !important;
 }
 
-.er-btn--ghost, .er-btn--invert { font-weight: 500; }
-.er-btn--ghost { color: var(--er-ink) !important; }
-.er-btn--invert { background: var(--er-algae); border-color: var(--er-algae); color: #04150e !important; }
+/* ---- cards: photocopied paper, taped down ---- */
+.er-card,
+.er-site,
+.er-artifact {
+  border-radius: 2px;
+  border-color: rgba(242, 255, 61, 0.22);
+}
 
-/* ---- lab-notebook labels ---- */
-.er-eyebrow {
+.er-card { border-left: 3px solid var(--er-acid); }
+.er-card:nth-child(2) { border-left-color: var(--er-hot); }
+.er-card:nth-child(3) { border-left-color: var(--er-paper); }
+
+.er-card-icon {
+  border-radius: 2px;
+  border-color: currentColor;
+  color: var(--er-acid);
+  transform: rotate(-2deg);
+}
+
+.er-card:nth-child(2) .er-card-icon { color: var(--er-hot); }
+
+/* ---- stats: spray-stencil numerals ---- */
+.er-stat b {
+  font-family: var(--er-sans);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--er-acid);
+}
+
+.er-stats { border-top: 2px solid var(--er-acid); }
+
+/* ---- tour dates ---- */
+.er-gig {
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  border-bottom: 1px dashed var(--er-line);
+  padding: 13px 0;
+}
+
+.er-gig-year {
+  font-family: var(--er-mono);
+  font-weight: 700;
+  color: var(--er-hot);
+  letter-spacing: 0.02em;
+}
+
+.er-section .er-gig-body b { text-transform: uppercase; letter-spacing: 0.01em; }
+
+/* ---- torn edges between sections ---- */
+.er-section + .er-section,
+.er-section--tint,
+.er-section--light {
+  position: relative;
+}
+
+.er-section--light::before,
+.er-section--tint::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 14px;
+  background: inherit;
+  clip-path: polygon(0 100%, 2% 30%, 5% 90%, 9% 20%, 13% 80%, 17% 25%, 22% 95%, 27% 35%, 32% 85%, 37% 20%, 42% 90%, 47% 30%, 52% 80%, 57% 25%, 62% 95%, 67% 35%, 72% 85%, 77% 20%, 82% 90%, 87% 30%, 92% 80%, 96% 25%, 100% 95%, 100% 100%);
+}
+
+/* ---- halftone: the photocopier's fingerprint ---- */
+.er-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: radial-gradient(currentColor 1px, transparent 1.4px);
+  background-size: 5px 5px;
+  color: var(--er-ink);
+}
+
+.er-section > .er-wrap { position: relative; z-index: 1; }
+
+/* ---- the ticker ---- */
+.er-ticker {
+  overflow: hidden;
+  background: var(--er-acid);
+  color: #0b0b0b;
+  border-block: 2px solid #0b0b0b;
+  padding: 9px 0;
+}
+
+.er-ticker-track {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  animation: er-roll 38s linear infinite;
+}
+
+.er-ticker span {
+  font-family: var(--er-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.8rem;
+  padding-inline: 18px;
+  white-space: nowrap;
+}
+
+@keyframes er-roll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .er-ticker-track { animation: none; }
+}
+
+/* ---- stickers slapped on the hero ---- */
+.er-sticker {
+  display: inline-block;
   font-family: var(--er-mono);
   font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  font-weight: 500;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 7px 12px;
+  border: 2px dashed currentColor;
+  color: var(--er-acid);
+  transform: rotate(-2deg);
+  margin-top: 14px;
 }
 
-.er-eyebrow .er-num {
-  color: var(--er-muted);
-  margin-right: 2px;
+/* ---- takeaways read like a stamped note ---- */
+.er-takeaway {
+  border-left: 3px solid var(--er-hot);
+  border-radius: 0;
+  background: rgba(255, 45, 111, 0.06);
 }
 
-.er-kicker { font-family: var(--er-mono); letter-spacing: 0.14em; }
-.er-gig-year, .er-pill-year, .er-media-meta, .er-slider-count { font-family: var(--er-mono); }
-.er-stat b { font-family: var(--er-mono); letter-spacing: -0.02em; }
+.er-proof li::before { border-radius: 0; background: var(--er-acid); }
+.er-pills a, .er-pills span { border-radius: 2px; }
+.er-genotype li { border-radius: 2px; }
+.er-slider-frame, .er-video, .er-shot, .er-ig-follow { border-radius: 2px; }
+.er-slider-btn, .er-filter { border-radius: 2px; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.8rem; }
+.er-filter[aria-pressed="true"] { background: var(--er-acid); border-color: var(--er-acid); color: #0b0b0b; }
+.er-card-link, .er-url, .er-artifact a { font-family: var(--er-mono); color: var(--er-acid) !important; }
+.er-section--light .er-card-link, .er-section--light .er-url { color: #8a0038 !important; }
+.er-more > summary { font-weight: 700; text-transform: uppercase; }
 
-/* ---- genotype chips ---- */
+@media (max-width: 600px) {
+  .er-h2 { font-size: clamp(1.9rem, 9vw, 2.5rem); }
+  .er-gig { grid-template-columns: 3.6rem minmax(0, 1fr); }
+}
+
+/* ---- the hero is the flyer's top half ---- */
+.sqsrte-scaled-text h1,
+.er-hero-head {
+  text-transform: uppercase;
+  font-weight: 700 !important;
+  letter-spacing: -0.035em;
+  line-height: 0.86 !important;
+}
+
+.sqsrte-scaled-text h1 .er-hot { color: var(--er-hot); }
+.sqsrte-scaled-text h1 .er-acid { color: var(--er-acid); }
+
+.er-hero-cta {
+  margin-top: 26px !important;
+  gap: 14px !important;
+}
+
+.er-hero-cta a {
+  border-radius: 2px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  padding: 14px 24px !important;
+  box-shadow: 4px 4px 0 var(--er-hot);
+  transition: transform 0.12s ease, box-shadow 0.12s ease !important;
+}
+
+.er-hero-cta a:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0 var(--er-hot);
+}
+
+.er-hero-cta a + a {
+  background: transparent;
+  border: 2px solid var(--er-acid);
+  color: var(--er-acid) !important;
+  box-shadow: 4px 4px 0 rgba(242, 255, 61, 0.25);
+}
+
+.er-hero-cta a + a:hover { box-shadow: 2px 2px 0 rgba(242, 255, 61, 0.25); }
+
+.er-hero-note { margin-top: 20px !important; }
+
+/* ---- the tint band is a magenta darkroom, not theme indigo ---- */
+.er-section--tint { background: #14040c; --er-line: rgba(255, 45, 111, 0.28); }
+
+/* ---- skills, set like a band's gear list ---- */
 .er-genotype {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .er-genotype li {
   font-family: var(--er-mono);
-  font-size: 0.78rem;
-  padding: 6px 11px;
-  border-radius: 6px;
-  border: 1px solid var(--er-line);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 7px 11px;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
   color: var(--er-muted);
 }
 
-.er-genotype li[data-class="wet"] { border-color: rgba(61, 239, 164, 0.4); color: var(--er-algae); }
-.er-genotype li[data-class="hard"] { border-color: rgba(255, 196, 107, 0.4); color: var(--er-amber); }
-.er-genotype li[data-class="soft"] { border-color: rgba(155, 140, 255, 0.4); color: var(--er-violet); }
+.er-genotype li[data-class="wet"] { color: var(--er-acid); border-color: rgba(242, 255, 61, 0.45); }
+.er-genotype li[data-class="hard"] { color: var(--er-hot); border-color: rgba(255, 45, 111, 0.45); }
+.er-genotype li[data-class="soft"] { color: var(--er-paper); border-color: rgba(245, 242, 232, 0.35); }
 
-/* ---- things actually built ---- */
+/* ---- the back catalog: a wall of photocopied index cards ---- */
 .er-built {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  margin-top: 34px;
 }
 
 .er-artifact {
   border: 1px solid var(--er-line);
-  border-left: 2px solid var(--er-algae);
-  border-radius: 4px 14px 14px 4px;
-  background: var(--er-card);
-  padding: 20px 22px;
+  border-top: 3px solid var(--er-acid);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 20px 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.er-artifact[data-class="hard"] { border-left-color: var(--er-amber); }
-.er-artifact[data-class="soft"] { border-left-color: var(--er-violet); }
-.er-artifact[data-class="infra"] { border-left-color: var(--er-cherry); }
-
-.er-artifact-meta {
-  font-family: var(--er-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  color: var(--er-muted);
-  display: flex;
   gap: 10px;
 }
 
-.er-artifact h3 { font-size: 1.08rem; margin: 0; line-height: 1.25; }
-.er-artifact p { margin: 0; font-size: 0.94rem; line-height: 1.55; color: var(--er-muted); }
-.er-artifact a { color: var(--er-algae); text-decoration: none; font-size: 0.88rem; font-family: var(--er-mono); }
+.er-artifact[data-class="hard"] { border-top-color: var(--er-hot); }
+.er-artifact[data-class="infra"] { border-top-color: var(--er-paper); }
+
+.er-section .er-artifact-meta {
+  margin: 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-family: var(--er-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--er-muted);
+}
+
+.er-section .er-artifact-meta span + span {
+  padding: 3px 7px;
+  border: 1px dashed currentColor;
+  letter-spacing: 0.1em;
+}
+
+.er-artifact[data-class="wet"] .er-artifact-meta span + span { color: var(--er-acid); }
+.er-artifact[data-class="hard"] .er-artifact-meta span + span { color: var(--er-hot); }
+
+.er-artifact h3 {
+  margin: 0;
+  font-family: var(--er-sans);
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--er-ink);
+}
+
+.er-artifact p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--er-muted);
+}
+
+.er-artifact a {
+  margin-top: auto;
+  padding-top: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.06em;
+}
+
 .er-artifact a:hover { text-decoration: underline; }
 
-/* ---- the dish: a slow live-culture wash behind the hero ---- */
-.er-dish {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+.er-actions--right { justify-content: flex-end; }
+.er-slider-btn--play { min-width: 46px; justify-content: center; }
+
+/* ---- the light band is newsprint, not a white paper ---- */
+.er-section--light {
+  background: var(--er-paper);
+  --er-ink: #14100a;
+  --er-muted: rgba(20, 16, 10, 0.7);
+  --er-line: rgba(20, 16, 10, 0.16);
+  --er-card: rgba(20, 16, 10, 0.03);
+}
+
+.er-section--light .er-topic b,
+.er-section--light .er-media-item b,
+.er-section .er-topic b,
+.er-section .er-media-item b {
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+}
+
+.er-section--light .er-btn--ghost:hover { background: #14100a; color: var(--er-paper) !important; }
+
+/* ---- the photo strip: polaroids taped up crooked ---- */
+.er-ig-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.er-ig-shot {
+  display: block;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
-  opacity: 0.5;
+  border: 2px solid var(--er-acid);
+  background: #0b0b0b;
+  transition: transform 0.14s ease, border-color 0.14s ease;
 }
 
-.er-dish span {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  animation: er-drift 34s ease-in-out infinite alternate;
+.er-ig-shot:nth-child(even) { border-color: var(--er-hot); transform: rotate(0.8deg); }
+.er-ig-shot:nth-child(odd) { transform: rotate(-0.8deg); }
+.er-ig-shot:hover { transform: rotate(0) scale(1.03); }
+
+.er-ig-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(1) contrast(1.25);
+  transition: filter 0.18s ease;
 }
 
-.er-dish span:nth-child(1) { width: 46vw; height: 46vw; left: -8vw; top: -12vw; background: rgba(61, 239, 164, 0.30); }
-.er-dish span:nth-child(2) { width: 34vw; height: 34vw; right: -6vw; top: 18vh; background: rgba(255, 95, 162, 0.20); animation-duration: 46s; }
-.er-dish span:nth-child(3) { width: 28vw; height: 28vw; left: 32vw; bottom: -10vw; background: rgba(155, 140, 255, 0.20); animation-duration: 58s; }
+.er-ig-shot:hover img { filter: none; }
 
-@keyframes er-drift {
-  from { transform: translate3d(0, 0, 0) scale(1); }
-  to { transform: translate3d(4vw, -3vh, 0) scale(1.15); }
+.er-ig-follow {
+  min-height: 0;
+  flex-direction: row;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 16px 22px;
+  border-width: 2px;
+  border-style: dashed;
+  border-color: var(--er-acid);
+  background: transparent;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .er-dish span { animation: none; }
-}
-
-/* ---- progressive disclosure for long lists ---- */
-.er-more { margin-top: 4px; }
-
-.er-more > summary {
+.er-section .er-ig-follow b {
   font-family: var(--er-mono);
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
-  color: var(--er-accent);
-  cursor: pointer;
-  padding: 14px 0;
-  list-style: none;
+  font-size: 0.95rem;
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
 }
 
-.er-more > summary::-webkit-details-marker { display: none; }
-.er-more > summary::before { content: "▸ "; }
-.er-more[open] > summary::before { content: "▾ "; }
-.er-more > summary:hover { color: var(--er-ink); }
+.er-section .er-ig-follow span { font-weight: 700; letter-spacing: 0.04em; }
+.er-ig-follow:hover { background: rgba(242, 255, 61, 0.07); }
+
+@media (max-width: 700px) {
+  .er-ig-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* the strip now carries the section; the wrapper stops being a grid */
+.er-ig { display: block; }
+.er-ig-follow { display: inline-flex; }
+
+/* ---- set list entries read like a track listing ---- */
+.er-topic h3 {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  line-height: 1.1;
+}
+
+.er-topic { border-bottom-style: dashed; }
+.er-media-item b, .er-credit b { text-transform: uppercase; letter-spacing: 0.01em; }
+
+/* ---- on newsprint the magenta has to be a darker ink to stay readable ---- */
+.er-section--light {
+  --er-accent: #c4004a;
+  --er-hot-ink: #c4004a;
+}
+
+.er-section--light .er-eyebrow { background: #c4004a; color: var(--er-paper); }
+.er-section--light .er-gig-year,
+.er-section--light .er-kicker,
+.er-section--light .er-topic span { color: #c4004a; }
+.er-section--light .er-takeaway { border-left-color: #c4004a; background: rgba(196, 0, 74, 0.06); }
+
+/* ---- the portfolio hero joins the flyer ---- */
+.er-hero-band,
+.er-hero-band .section-background,
+.er-hero-band .section-background > * {
+  background: #0b0b0b !important;
+}
+
+.er-hero-band .sqs-html-content h1,
+.er-hero-band h1 {
+  color: #ffffff !important;
+  text-transform: uppercase;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em;
+  line-height: 0.9 !important;
+}
+
+.er-hero-band .sqsrte-text-highlight { background: none !important; }
+
+.er-hero-cta--center { justify-content: center; }
+
+.er-hero-cta--center {
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+  flex-wrap: nowrap;
+}
+
+/* the band is black now, so the header over it has to read light */
+.er-hero-band ~ #header,
+body:has(.er-hero-band) #header .header-nav-item a,
+body:has(.er-hero-band) #header .header-title-text a,
+body:has(.er-hero-band) #header .header-actions a,
+body:has(.er-hero-band) #header .icon svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+@media (max-width: 520px) {
+  .er-hero-cta--center { flex-wrap: wrap; justify-content: center; }
+}
+
+/* the fluid-engine cell holding the hero buttons is only a few columns wide */
+.er-hero-band .fe-block:has(.er-hero-cta--center) {
+  grid-column: 1 / -1 !important;
+  justify-self: center;
+}
+
+.er-hero-cta--center a { white-space: nowrap; }
+
+/* the theme colours the fixed header from the first section's light/dark class */
+body:has(.er-hero-band) #header,
+body:has(.er-hero-band) #header.light { background-color: #0b0b0b !important; }
+
+/* card headings shout too */
+.er-card h3 {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+
+/* ---- the form is a photocopied booking slip ---- */
+.sqs-block-form .form-item .title,
+.sqs-block-form .field-list .title {
+  font-family: var(--er-mono);
+  font-size: 0.72rem !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--er-acid) !important;
+}
+
+.sqs-block-form input[type="text"],
+.sqs-block-form input[type="email"],
+.sqs-block-form input[type="tel"],
+.sqs-block-form input[type="number"],
+.sqs-block-form select,
+.sqs-block-form textarea {
+  border-radius: 2px !important;
+  border: 2px solid rgba(242, 255, 61, 0.4) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: #fff !important;
+  font-family: var(--er-sans-body) !important;
+}
+
+.sqs-block-form input:focus,
+.sqs-block-form textarea:focus,
+.sqs-block-form select:focus {
+  border-color: var(--er-acid) !important;
+  outline: 2px solid rgba(242, 255, 61, 0.3);
+  outline-offset: 1px;
+}
+
+.sqs-block-form .form-button-wrapper button,
+.sqs-block-form button[type="submit"] {
+  background: var(--er-acid) !important;
+  border: 2px solid var(--er-acid) !important;
+  color: #0b0b0b !important;
+  box-shadow: 4px 4px 0 var(--er-hot);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.sqs-block-form .form-button-wrapper button:hover,
+.sqs-block-form button[type="submit"]:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--er-hot);
+}
+
+.sqs-block-form .description,
+.sqs-block-form .required { color: rgba(255, 255, 255, 0.55) !important; }
+
+.form-wrapper .field-list .field .field-element,
+.form-wrapper input.field-element,
+.form-wrapper textarea.field-element,
+.form-wrapper select.field-element {
+  border-radius: 2px !important;
+  border: 2px solid rgba(242, 255, 61, 0.4) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: #fff !important;
+}
+
+.form-wrapper .field-list .field .field-element:focus {
+  border-color: var(--er-acid) !important;
+}
+
+/* the form's own heading joins the flyer */
+.sqs-block-form + .sqs-block-html h1,
+.sqs-block-html h1.form-heading,
+.page-section .sqs-block-form h1,
+.sqs-block-form .form-header h1,
+.sqs-block-form .form-header h2 {
+  text-transform: uppercase;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em;
+}
+
+/* the skip link is invisible until focused — make sure it reads when it is */
+.header-skip-link:focus,
+.header-skip-link:focus-visible {
+  background: var(--er-acid) !important;
+  color: #0b0b0b !important;
+  border-radius: 2px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 10px 16px;
+  outline: 2px solid #0b0b0b;
+}
+
+/* ---- the experience accordion is the liner notes ---- */
+.accordion-block .accordion-item__title,
+.accordion-block .accordion-item__title-wrapper {
+  text-transform: uppercase;
+  font-weight: 700 !important;
+  letter-spacing: -0.005em;
+}
+
+.accordion-block .accordion-divider {
+  border-top: 1px dashed rgba(242, 255, 61, 0.35) !important;
+  background: none !important;
+  height: 0 !important;
+}
+
+.accordion-block .accordion-item__icon svg,
+.accordion-block .accordion-item__icon { color: var(--er-acid) !important; }
