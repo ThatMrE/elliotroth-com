@@ -3,13 +3,13 @@
    Squarespace theme. Everything here is prefixed .er- so it can
    never collide with the generated theme CSS.
    Palette is taken from the site theme:
-     accent      hsl(237.14, 100%, 62.94%)
+     accent      var(--er-algae)
      dark accent hsl(243.87, 40.26%, 15.1%)
    Fonts: Ubuntu (headings) / Cabin (body), same as the theme.
 --------------------------------------------------------------- */
 
 .er-section {
-  --er-accent: hsl(237.14, 100%, 62.94%);
+  --er-accent: var(--er-algae);
   --er-ink: #ffffff;
   --er-muted: rgba(255, 255, 255, 0.72);
   --er-line: rgba(255, 255, 255, 0.16);
@@ -56,7 +56,7 @@
   margin: 0 0 18px;
 }
 
-.er-section--tint .er-eyebrow { color: #a9adff; }
+.er-section--tint .er-eyebrow { color: var(--er-algae); }
 
 .er-h2 {
   font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -342,18 +342,21 @@
   align-items: center;
   padding: 14px 26px;
   border-radius: 999px;
-  font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+  font-family: var(--er-sans);
   font-size: 0.98rem;
+  font-weight: 600;
   text-decoration: none !important;
-  background: hsl(237.14, 100%, 62.94%);
-  color: #fff !important;
-  border: 1px solid hsl(237.14, 100%, 62.94%);
+  background: var(--er-algae);
+  color: #04150e !important;
+  border: 1px solid var(--er-algae);
   transition: transform 0.18s ease;
 }
 
 .er-hero-cta a + a {
   background: transparent;
   border-color: rgba(255, 255, 255, 0.4);
+  color: #fff !important;
+  font-weight: 500;
 }
 
 .er-hero-cta a:hover { transform: translateY(-2px); }
@@ -1262,3 +1265,169 @@ button.button {
   .er-btn, .er-slider-btn, .er-filter, .er-card-link, .er-url { min-height: 44px; display: inline-flex; align-items: center; }
   .er-slider-btn { padding-inline: 18px; }
 }
+
+/* =========================================================
+   BIOPUNK LAYER
+   The consulting site was wearing a borrowed suit: corporate
+   indigo, no voice. Elliot already solved his own personality
+   problem on elliotroth.me — a lab notebook that behaves like a
+   live culture. This ports that language onto a hire-me spine.
+
+   Palette and type are lifted from elliotroth.me so the two
+   sites read as one person.
+   ========================================================= */
+
+:root {
+  --er-algae: #3defa4;
+  --er-algae-dim: #1fa974;
+  --er-cherry: #ff5fa2;
+  --er-amber: #ffc46b;
+  --er-violet: #9b8cff;
+  --er-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  /* the theme's own accent, re-pointed so buttons, links and form
+     focus rings follow the same green instead of Squarespace indigo */
+  --accent-hsl: 154.7, 84.7%, 58.8%;
+  --safeDarkAccent-hsl: 154.7, 84.7%, 58.8%;
+}
+
+.er-section {
+  --er-accent: var(--er-algae);
+}
+
+.er-section--light { --er-accent: #0f7a4f; }
+
+/* keep text legible on the bright green */
+.er-btn,
+.sqs-button-element--primary,
+.form-button-wrapper button,
+button.button {
+  color: #04150e !important;
+  font-weight: 600;
+}
+
+.er-btn--ghost, .er-btn--invert { font-weight: 500; }
+.er-btn--ghost { color: var(--er-ink) !important; }
+.er-btn--invert { background: var(--er-algae); border-color: var(--er-algae); color: #04150e !important; }
+
+/* ---- lab-notebook labels ---- */
+.er-eyebrow {
+  font-family: var(--er-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  font-weight: 500;
+}
+
+.er-eyebrow .er-num {
+  color: var(--er-muted);
+  margin-right: 2px;
+}
+
+.er-kicker { font-family: var(--er-mono); letter-spacing: 0.14em; }
+.er-gig-year, .er-pill-year, .er-media-meta, .er-slider-count { font-family: var(--er-mono); }
+.er-stat b { font-family: var(--er-mono); letter-spacing: -0.02em; }
+
+/* ---- genotype chips ---- */
+.er-genotype {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.er-genotype li {
+  font-family: var(--er-mono);
+  font-size: 0.78rem;
+  padding: 6px 11px;
+  border-radius: 6px;
+  border: 1px solid var(--er-line);
+  color: var(--er-muted);
+}
+
+.er-genotype li[data-class="wet"] { border-color: rgba(61, 239, 164, 0.4); color: var(--er-algae); }
+.er-genotype li[data-class="hard"] { border-color: rgba(255, 196, 107, 0.4); color: var(--er-amber); }
+.er-genotype li[data-class="soft"] { border-color: rgba(155, 140, 255, 0.4); color: var(--er-violet); }
+
+/* ---- things actually built ---- */
+.er-built {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+
+.er-artifact {
+  border: 1px solid var(--er-line);
+  border-left: 2px solid var(--er-algae);
+  border-radius: 4px 14px 14px 4px;
+  background: var(--er-card);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.er-artifact[data-class="hard"] { border-left-color: var(--er-amber); }
+.er-artifact[data-class="soft"] { border-left-color: var(--er-violet); }
+.er-artifact[data-class="infra"] { border-left-color: var(--er-cherry); }
+
+.er-artifact-meta {
+  font-family: var(--er-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--er-muted);
+  display: flex;
+  gap: 10px;
+}
+
+.er-artifact h3 { font-size: 1.08rem; margin: 0; line-height: 1.25; }
+.er-artifact p { margin: 0; font-size: 0.94rem; line-height: 1.55; color: var(--er-muted); }
+.er-artifact a { color: var(--er-algae); text-decoration: none; font-size: 0.88rem; font-family: var(--er-mono); }
+.er-artifact a:hover { text-decoration: underline; }
+
+/* ---- the dish: a slow live-culture wash behind the hero ---- */
+.er-dish {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.5;
+}
+
+.er-dish span {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: er-drift 34s ease-in-out infinite alternate;
+}
+
+.er-dish span:nth-child(1) { width: 46vw; height: 46vw; left: -8vw; top: -12vw; background: rgba(61, 239, 164, 0.30); }
+.er-dish span:nth-child(2) { width: 34vw; height: 34vw; right: -6vw; top: 18vh; background: rgba(255, 95, 162, 0.20); animation-duration: 46s; }
+.er-dish span:nth-child(3) { width: 28vw; height: 28vw; left: 32vw; bottom: -10vw; background: rgba(155, 140, 255, 0.20); animation-duration: 58s; }
+
+@keyframes er-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(4vw, -3vh, 0) scale(1.15); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .er-dish span { animation: none; }
+}
+
+/* ---- progressive disclosure for long lists ---- */
+.er-more { margin-top: 4px; }
+
+.er-more > summary {
+  font-family: var(--er-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--er-accent);
+  cursor: pointer;
+  padding: 14px 0;
+  list-style: none;
+}
+
+.er-more > summary::-webkit-details-marker { display: none; }
+.er-more > summary::before { content: "▸ "; }
+.er-more[open] > summary::before { content: "▾ "; }
+.er-more > summary:hover { color: var(--er-ink); }
