@@ -2109,3 +2109,40 @@ body:has(.er-hero-band) #header.light { background-color: #0b0b0b !important; }
 
 /* four offers: four across when there's room, two, then one */
 .er-grid--4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 228px), 1fr)); }
+
+/* ---- day jobs: a credits list, not a CV ---- */
+.er-roles {
+  list-style: none;
+  margin: 30px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+
+.er-role {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  gap: 6px 24px;
+  align-items: baseline;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--er-line);
+}
+
+.er-section .er-role b {
+  font-family: var(--er-sans);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: var(--er-ink);
+}
+
+.er-section .er-role span {
+  display: block;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--er-muted);
+}
+
+@media (max-width: 640px) {
+  .er-role { grid-template-columns: 1fr; gap: 3px; padding: 12px 0; }
+}
