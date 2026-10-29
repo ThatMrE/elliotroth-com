@@ -2146,3 +2146,151 @@ body:has(.er-hero-band) #header.light { background-color: #0b0b0b !important; }
 @media (max-width: 640px) {
   .er-role { grid-template-columns: 1fr; gap: 3px; padding: 12px 0; }
 }
+
+/* =========================================================
+   BIOPUNK LAYER — the laboratory half.
+   Derived from the reference board: hazard pictograms and
+   warning sheets, radioactive-waste labels with form fields,
+   and microscopy — circular scope views with a white label
+   slapped over the specimen.
+   The punk half (acid, magenta, halftone, torn edges, xerox)
+   was already here and the board confirms it; this adds the
+   lab signage it was missing.
+   ========================================================= */
+
+/* ---- hazard tape: the diagonal rule off the warning sheets ---- */
+.er-hazard-rule {
+  height: 14px;
+  border-block: 2px solid #0b0b0b;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--er-acid) 0 14px,
+    #0b0b0b 14px 28px
+  );
+}
+
+/* ---- back catalog cards become specimen labels ---- */
+.er-artifact {
+  padding-top: 0;
+}
+
+.er-section .er-artifact-meta {
+  margin: 0 -20px 14px;
+  padding: 7px 20px;
+  gap: 0;
+  background: var(--er-acid);
+  color: #0b0b0b;
+  border-bottom: 2px solid #0b0b0b;
+  justify-content: flex-start;
+}
+
+/* field labels, the way a waste label is printed */
+.er-section .er-artifact-meta span:first-child::before {
+  content: "DATE ";
+  opacity: 0.55;
+}
+
+.er-section .er-artifact-meta span + span {
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1.5px solid #0b0b0b;
+  border-radius: 0;
+  color: #0b0b0b;
+}
+
+.er-section .er-artifact-meta span + span::before {
+  content: "CLASS ";
+  opacity: 0.55;
+}
+
+/* the class colour now reads as a stripe on the label, not the card edge */
+.er-artifact[data-class="hard"] .er-artifact-meta { background: var(--er-hot); color: #fff; }
+.er-artifact[data-class="hard"] .er-artifact-meta span + span { border-color: #fff; color: #fff; }
+.er-artifact[data-class="infra"] .er-artifact-meta { background: var(--er-paper); }
+
+/* ---- the photo strip becomes a set of scope views ---- */
+.er-ig-shot {
+  border-radius: 50%;
+  border-width: 3px;
+  overflow: hidden;
+}
+
+.er-ig-shot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: inset 0 0 28px 10px rgba(0, 0, 0, 0.75);
+}
+
+.er-ig-shot { position: relative; }
+.er-ig-shot img { filter: grayscale(1) contrast(1.35) brightness(1.05); }
+.er-ig-shot:hover { transform: rotate(0) scale(1.04); }
+.er-ig-shot:hover img { filter: contrast(1.1) saturate(1.2); }
+
+/* ---- hazard badge for the offer cards ---- */
+.er-card-icon {
+  position: relative;
+  border: none;
+  background: none;
+  transform: none;
+  display: grid;
+  place-items: center;
+}
+
+.er-card-icon::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: currentColor;
+  clip-path: polygon(50% 2%, 100% 98%, 0 98%);
+  opacity: 0.18;
+}
+
+.er-card-icon::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border: 2px solid currentColor;
+  clip-path: polygon(50% 2%, 100% 98%, 0 98%);
+}
+
+.er-card-icon .er-icon {
+  position: relative;
+  transform: translateY(3px) scale(0.72);
+}
+
+/* ---- a specimen label, for pinning over anything ---- */
+.er-specimen {
+  display: inline-block;
+  background: #f7f7f2;
+  color: #0b0b0b;
+  font-family: var(--er-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  transform: rotate(-1.2deg);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 600px) {
+  .er-hazard-rule { height: 10px; }
+  .er-section .er-artifact-meta { margin-inline: -20px; }
+}
+
+/* The xerox layer coloured these spans by class — acid on the new acid label
+   rendered them invisible, and white on the magenta one lands at 3.8:1.
+   On a printed label the ink is black. */
+.er-artifact .er-artifact-meta span + span,
+.er-artifact[data-class="wet"] .er-artifact-meta span + span,
+.er-artifact[data-class="hard"] .er-artifact-meta span + span,
+.er-artifact[data-class="infra"] .er-artifact-meta span + span {
+  color: #0b0b0b;
+  border-color: #0b0b0b;
+}
+
+.er-artifact[data-class="hard"] .er-artifact-meta { color: #0b0b0b; }
+.er-card-icon .er-icon { transform: translateY(4px) scale(0.82); }
