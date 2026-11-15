@@ -92,4 +92,144 @@
       racks.forEach(stack);
     }
   }
+
+  /* ---- the pit: ideas as bodies you push through ----
+     A fixed-step loop over at most 20 stickers: a slow drift at rest, a
+     shove away from the pointer, soft separation between neighbours, and
+     the walls of the band. It runs only while the band is on screen and
+     the tab is visible, and never under reduced motion. */
+  var pit = doc.querySelector('.er-pit');
+  if (pit) (function () {
+    var floor = pit.querySelector('.er-pit-floor');
+    var items = [].slice.call(floor.children, 0, 20);
+    var bodies = [], live = false, seen = false, raf = 0, t = 0, ptr = null, W = 0, H = 0;
+
+    function layout() {
+      W = floor.clientWidth; H = floor.clientHeight;
+      var n = items.length, cols = W > 900 ? 5 : W > 560 ? 4 : 3, rows = Math.ceil(n / cols);
+      /* home positions cluster toward the middle of the band, like a crowd does */
+      var cw = W / cols, rh = H * 0.78 / rows, top0 = H * 0.11;
+      bodies = items.map(function (el, i) {
+        var w = el.offsetWidth, h = el.offsetHeight, rot = ((i * 31) % 17) - 8, rad = Math.abs(rot) * Math.PI / 180;
+        var hx = cw * (i % cols + 0.5) + ((i * 7919) % 41 - 20) * cw / 110;
+        var hy = top0 + rh * (Math.floor(i / cols) + 0.5) + ((i * 104729) % 37 - 18) * rh / 110;
+        /* the walls see the rotated box, not the upright one */
+        return { el: el, x: hx, y: hy, hx: hx, hy: hy, vx: 0, vy: 0, w: w, h: h,
+                 ex: (w * Math.cos(rad) + h * Math.sin(rad)) / 2 + 4,
+                 ey: (w * Math.sin(rad) + h * Math.cos(rad)) / 2 + 4,
+                 ph: i * 1.7, rot: rot, surf: 0, sx: 0 };
+      });
+    }
+
+    function step() {
+      t += 1 / 60;
+      var i, j, a, b, dx, dy, d, f, ox, oy, n = bodies.length;
+      for (i = 0; i < n; i++) {
+        a = bodies[i];
+        var tx = a.hx + Math.sin(t * 0.9 + a.ph) * 3, ty = a.hy + Math.cos(t * 0.7 + a.ph) * 3;
+        if (a.surf) { tx = a.sx; ty = -a.h; }
+        a.vx += (tx - a.x) * 0.012;
+        a.vy += (ty - a.y) * 0.012;
+        if (ptr && !a.surf) {
+          dx = a.x - ptr.x; dy = a.y - ptr.y; d = Math.sqrt(dx * dx + dy * dy) || 1;
+          if (d < 120) { f = (120 - d) * 0.06; a.vx += dx / d * f; a.vy += dy / d * f; }
+        }
+      }
+      for (i = 0; i < n; i++) for (j = i + 1; j < n; j++) {
+        a = bodies[i]; b = bodies[j];
+        if (a.surf || b.surf) continue;
+        dx = b.x - a.x; dy = b.y - a.y;
+        ox = (a.w + b.w) * 0.47 - Math.abs(dx); oy = (a.h + b.h) * 0.46 - Math.abs(dy);
+        if (ox > 0 && oy > 0) {
+          if (ox < oy) { f = ox * 0.02 * (dx < 0 ? -1 : 1); a.vx -= f; b.vx += f; }
+          else { f = oy * 0.02 * (dy < 0 ? -1 : 1); a.vy -= f; b.vy += f; }
+        }
+      }
+      for (i = 0; i < n; i++) {
+        a = bodies[i];
+        a.vx *= 0.86; a.vy *= 0.86; a.x += a.vx; a.y += a.vy;
+        if (!a.surf) {
+          if (a.x < a.ex) { a.x = a.ex; a.vx *= -0.4; } else if (a.x > W - a.ex) { a.x = W - a.ex; a.vx *= -0.4; }
+          if (a.y < a.ey) { a.y = a.ey; a.vy *= -0.4; } else if (a.y > H - a.ey) { a.y = H - a.ey; a.vy *= -0.4; }
+        }
+        a.el.style.transform = 'translate(' + (a.x - a.w / 2).toFixed(1) + 'px,' + (a.y - a.h / 2).toFixed(1) + 'px) rotate(' + a.rot + 'deg)' + (a.surf ? ' scale(1.15)' : '');
+      }
+      raf = (live && seen && !doc.hidden) ? requestAnimationFrame(step) : 0;
+    }
+
+    function wake() { if (live && seen && !doc.hidden && !raf) raf = requestAnimationFrame(step); }
+
+    function start() {
+      if (live || !show.motion) return;
+      pit.classList.add('er-pit--live');
+      layout();
+      live = true;
+      wake();
+    }
+
+    function stop() {
+      live = false;
+      pit.classList.remove('er-pit--live');
+      items.forEach(function (el) { el.style.transform = ''; el.style.zIndex = ''; });
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    }
+
+    function pointAt(e) {
+      var rc = floor.getBoundingClientRect();
+      ptr = { x: e.clientX - rc.left, y: e.clientY - rc.top };
+    }
+    function pointGone() { ptr = null; }
+    pit.addEventListener('pointermove', pointAt);
+    pit.addEventListener('pointerdown', pointAt);
+    pit.addEventListener('pointerup', pointGone);
+    pit.addEventListener('pointercancel', pointGone);
+    pit.addEventListener('pointerleave', pointGone);
+
+    /* click a sticker: it crowd-surfs out of the pile, then the page
+       follows it to the section it names */
+    floor.addEventListener('click', function (e) {
+      var a = e.target.closest ? e.target.closest('.er-idea') : null;
+      if (!a || !live || !a.hash) return;
+      var target = doc.querySelector(a.hash);
+      var body = null;
+      for (var i = 0; i < bodies.length; i++) if (bodies[i].el === a.parentNode) body = bodies[i];
+      if (!body || body.surf || !target) return;
+      e.preventDefault();
+      body.surf = 1; body.sx = body.x; body.el.style.zIndex = 3;
+      a.classList.add('er-idea--surf');
+      setTimeout(function () {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (history.replaceState) history.replaceState(null, '', a.hash);
+      }, 550);
+      setTimeout(function () {
+        body.surf = 0; body.el.style.zIndex = '';
+        a.classList.remove('er-idea--surf');
+      }, 1400);
+    });
+
+    /* every thirty seconds one of them stage dives and shows its back */
+    setInterval(function () {
+      if (!live || !seen || doc.hidden || !bodies.length) return;
+      var b = bodies[Math.floor(Math.random() * bodies.length)];
+      if (b.surf) return;
+      b.vy -= 2;
+      b.el.firstElementChild.classList.add('er-idea--dive');
+      setTimeout(function () { b.el.firstElementChild.classList.remove('er-idea--dive'); }, 1700);
+    }, 30000);
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) { seen = es[0].isIntersecting; wake(); }).observe(pit);
+    } else {
+      seen = true;
+    }
+    doc.addEventListener('visibilitychange', wake);
+    var rz = 0;
+    window.addEventListener('resize', function () {
+      clearTimeout(rz);
+      rz = setTimeout(function () { if (live) layout(); }, 150);
+    });
+    show.onMotion.push(function (m) { if (m) start(); else stop(); });
+    start();
+  })();
 })();
