@@ -3087,3 +3087,140 @@ body:has(.er-hero-band) #header.light { background-color: #0b0b0b !important; }
   .er-string--ring { box-shadow: none; opacity: 0.85; }
   .er-ticker--fast .er-ticker-track { animation: none; }
 }
+
+/* =========================================================
+   SHOW LAYER — PR 5: lights, encore, load-out, and the banter.
+   ========================================================= */
+
+/* ---- stage banter: what the person with the mic says between songs ---- */
+.er-section .er-banter {
+  margin: 0 0 10px;
+  font-family: var(--er-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--er-hot);
+}
+
+.er-section--light .er-banter { color: #c4004a; }
+.er-card .er-banter { margin: -2px 0 -4px; }
+.er-coaching-head .er-banter { margin-top: 14px; }
+.er-dive .er-banter { margin-top: 14px; }
+.er-credits .er-banter { margin: 10px 0 0; }
+
+/* ---- stage lights that follow the hovered card ---- */
+.er-stage { position: relative; }
+
+.er-lights {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.er-js .er-lights--on { opacity: 1; }
+
+.er-light {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 620px;
+  height: 620px;
+  margin: -310px 0 0 -310px;
+  border-radius: 50%;
+  transform: translate(var(--er-x, 50%), var(--er-y, 40%));
+  transition: transform 0.3s ease;
+}
+
+/* 18% of the brightest colour over the darkroom stays under L 0.04,
+   so white text on the cards keeps better than 12:1 */
+.er-light--acid { background: radial-gradient(circle, rgba(242, 255, 61, 0.18), rgba(242, 255, 61, 0) 68%); }
+.er-light--hot { background: radial-gradient(circle, rgba(255, 45, 111, 0.18), rgba(255, 45, 111, 0) 68%); }
+
+/* ---- crowd counts as chalk on the back wall ---- */
+.er-dive--crowd .er-proof li {
+  font-family: var(--er-mono);
+  letter-spacing: 0.02em;
+}
+
+.er-dive--crowd .er-proof li b {
+  color: var(--er-paper);
+  text-decoration: underline dashed rgba(245, 242, 232, 0.5) 1px;
+  text-underline-offset: 4px;
+}
+
+.er-dive--crowd .er-proof li::before { background: var(--er-paper); }
+
+/* ---- load-out: two in the morning, chairs stacked, setlist on the floor ---- */
+.er-loadout {
+  margin-top: clamp(40px, 6vw, 72px);
+  padding-top: clamp(26px, 4vw, 40px);
+  border-top: 1px dashed var(--er-line);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 22px 36px;
+  align-items: end;
+  text-align: left;
+  position: relative;
+}
+
+.er-chairs {
+  width: 200px;
+  height: auto;
+  color: var(--er-acid);
+  opacity: 0.85;
+}
+
+.er-section .er-loadout-line {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--er-muted);
+}
+
+.er-section .er-next {
+  margin: 0;
+  font-family: var(--er-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--er-ink);
+}
+
+.er-section .er-next b { color: var(--er-acid); }
+.er-section .er-next a { color: var(--er-ink); text-decoration: underline; text-decoration-color: var(--er-hot); text-underline-offset: 3px; }
+.er-section .er-next a:hover { color: var(--er-acid); }
+
+/* the setlist, dropped on the floor by the chairs */
+.er-loadout::after {
+  content: "";
+  position: absolute;
+  left: 152px;
+  bottom: 2px;
+  width: 44px;
+  height: 30px;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.35) 0 0) 8px 7px / 26px 2px no-repeat,
+    linear-gradient(rgba(0, 0, 0, 0.35) 0 0) 8px 14px / 20px 2px no-repeat,
+    linear-gradient(rgba(0, 0, 0, 0.35) 0 0) 8px 21px / 24px 2px no-repeat,
+    var(--er-paper);
+  transform: rotate(14deg);
+  opacity: 0.9;
+}
+
+@media (max-width: 600px) {
+  .er-loadout { grid-template-columns: 1fr; gap: 18px; }
+  .er-chairs { width: 150px; }
+  .er-loadout::after { left: 112px; bottom: auto; top: 72px; width: 36px; height: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .er-light { transition: none; }
+  .er-lights { transition: none; }
+}

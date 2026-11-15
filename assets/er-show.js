@@ -360,4 +360,27 @@
     strum.addEventListener('pointerleave', reset);
     strum.addEventListener('pointercancel', reset);
   })();
+
+  /* ---- stage lights: two spots that swing to the hovered card ---- */
+  var stage = doc.querySelector('.er-stage');
+  if (stage) (function () {
+    var lights = stage.querySelector('.er-lights'), cards = stage.querySelectorAll('.er-grid--4 .er-card');
+    if (!lights || !cards.length) return;
+    var acid = lights.querySelector('.er-light--acid'), hot = lights.querySelector('.er-light--hot');
+    function aim(card) {
+      var s = stage.getBoundingClientRect(), c = card.getBoundingClientRect();
+      var x = c.left - s.left + c.width / 2, y = c.top - s.top + c.height / 2;
+      acid.style.setProperty('--er-x', (x - 120) + 'px'); acid.style.setProperty('--er-y', (y - 70) + 'px');
+      hot.style.setProperty('--er-x', (x + 140) + 'px'); hot.style.setProperty('--er-y', (y + 50) + 'px');
+      lights.classList.add('er-lights--on');
+    }
+    cards.forEach(function (card) {
+      card.addEventListener('pointerenter', function () { aim(card); });
+      card.addEventListener('pointerdown', function () { aim(card); });
+      card.addEventListener('focusin', function () { aim(card); });
+    });
+    /* warmed up on the first card until someone points at another */
+    aim(cards[0]);
+    window.addEventListener('resize', function () { if (lights.classList.contains('er-lights--on')) aim(cards[0]); });
+  })();
 })();
