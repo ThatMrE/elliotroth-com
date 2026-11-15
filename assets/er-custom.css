@@ -2940,3 +2940,150 @@ body:has(.er-hero-band) #header.light { background-color: #0b0b0b !important; }
 @media (prefers-reduced-motion: reduce) {
   .er-idea--dive, .er-idea--dive .er-idea-back { animation: none; }
 }
+
+/* =========================================================
+   SHOW LAYER — PR 4: the strum.
+   Six strings between the headline set and the crowd. Still, they
+   are a ruled divider; with the script, dragging across them plucks,
+   and pushing too hard feeds back. Hidden from assistive tech: it
+   does nothing a keyboard user needs.
+   ========================================================= */
+
+.er-strum {
+  position: relative;
+  background: #000;
+  padding: 36px max(6vw, 20px) 26px;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.er-strum-strings {
+  position: relative;
+  max-width: 1240px;
+  height: 86px;
+  margin: 0 auto;
+}
+
+.er-string {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--n) * 14px + 8px);
+  height: 0;
+  border-top: 1px solid var(--er-acid);
+  opacity: 0.85;
+  --er-pluck: 12px;
+}
+
+.er-string:nth-child(3n) { border-top-color: var(--er-hot); }
+.er-string:nth-child(3n + 1) { border-top-color: var(--er-paper); }
+
+/* the nut is hazard tape, the bridge is a magenta block */
+.er-strum-nut,
+.er-strum-bridge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  z-index: 1;
+}
+
+.er-strum-nut {
+  left: -8px;
+  background: repeating-linear-gradient(-45deg, var(--er-acid) 0 6px, #0b0b0b 6px 12px);
+  border-inline: 2px solid #0b0b0b;
+}
+
+.er-strum-bridge { right: -8px; background: var(--er-hot); width: 10px; }
+
+.er-section ~ .er-strum .er-strum-note,
+.er-strum-note {
+  margin: 10px auto 0;
+  max-width: 1240px;
+  font-family: var(--er-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: right;
+}
+
+/* the pluck: a damped ring, 400 ms */
+.er-string--ring {
+  animation: er-ring 0.4s linear both;
+  opacity: 1;
+  box-shadow: 0 0 10px 1px currentColor;
+}
+
+@keyframes er-ring {
+  0% { transform: translateY(0); }
+  15% { transform: translateY(var(--er-pluck)); }
+  35% { transform: translateY(calc(var(--er-pluck) * -0.6)); }
+  55% { transform: translateY(calc(var(--er-pluck) * 0.3)); }
+  75% { transform: translateY(calc(var(--er-pluck) * -0.12)); }
+  100% { transform: translateY(0); }
+}
+
+/* a chaotic strum: a halftone bloom behind the strings and a one-frame shake */
+.er-strum::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(242, 255, 61, 0.55), transparent 62%),
+    radial-gradient(rgba(242, 255, 61, 0.9) 1px, transparent 1.5px) 0 0 / 5px 5px;
+}
+
+.er-strum--bloom::before { animation: er-bloom 0.5s ease-out both; }
+
+@keyframes er-bloom {
+  from { opacity: 0.5; }
+  to { opacity: 0; }
+}
+
+.er-strum--shake .er-strum-strings { animation: er-shake 0.08s linear 1; }
+
+@keyframes er-shake {
+  25% { transform: translate(2px, -2px); }
+  75% { transform: translate(-2px, 2px); }
+}
+
+/* feedback: one 800 ms ramp of magenta into acid, then it calms */
+.er-strum::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(90deg, var(--er-hot), var(--er-acid));
+}
+
+.er-strum--feedback::after { animation: er-feedback 0.8s ease-in-out both; }
+
+@keyframes er-feedback {
+  0% { opacity: 0; }
+  40% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+
+/* and the ticker runs at double speed for ten seconds */
+.er-ticker--fast .er-ticker-track { animation-duration: 19s; }
+
+@media (max-width: 600px) {
+  .er-strum { padding: 26px 16px 20px; }
+  .er-string { --er-pluck: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .er-string--ring,
+  .er-strum--bloom::before,
+  .er-strum--shake .er-strum-strings,
+  .er-strum--feedback::after { animation: none; }
+  .er-string--ring { box-shadow: none; opacity: 0.85; }
+  .er-ticker--fast .er-ticker-track { animation: none; }
+}

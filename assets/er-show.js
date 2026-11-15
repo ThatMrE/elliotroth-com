@@ -229,7 +229,135 @@
       clearTimeout(rz);
       rz = setTimeout(function () { if (live) layout(); }, 150);
     });
+    /* feedback from the strum below shoves the whole pile outward once */
+    show.shove = function () {
+      if (!live) return;
+      bodies.forEach(function (b) {
+        var dx = b.x - W / 2, dy = b.y - H / 2, d = Math.sqrt(dx * dx + dy * dy) || 1;
+        b.vx += dx / d * 7; b.vy += dy / d * 7;
+      });
+      wake();
+    };
+
     show.onMotion.push(function (m) { if (m) start(); else stop(); });
     start();
+  })();
+
+  /* ---- the strum: six strings you drag across ----
+     Each crossing plucks: a visible ring first, a sound only if the
+     visitor turned sound on. Crossing four or more strings within
+     300 ms is a chaotic strum (bloom + shake); five of those inside
+     ten seconds feeds back, once, then it calms. */
+  var strum = doc.querySelector('.er-strum');
+  if (strum) (function () {
+    var strings = [].slice.call(strum.querySelectorAll('.er-string'));
+    var box = strum.querySelector('.er-strum-strings');
+    var prevY = null, crossings = [], strums = [], lastBloom = 0, feedbackUntil = 0;
+    var NOTES = [82.41, 110, 146.83, 196, 246.94, 329.63];
+
+    /* ---- sound: nothing exists until the toggle is on and a gesture arrives ---- */
+    var ac = null, master = null, grit = null;
+    function audio() {
+      if (ac) return ac;
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ac = new AC();
+      grit = ac.createWaveShaper();
+      var curve = new Float32Array(256);
+      for (var i = 0; i < 256; i++) curve[i] = Math.tanh((i / 127.5 - 1) * 3);
+      grit.curve = curve;
+      master = ac.createGain();
+      master.gain.value = 0.22; /* never above 0.25 */
+      grit.connect(master);
+      master.connect(ac.destination);
+      show.audio = ac;
+      show.master = master;
+      return ac;
+    }
+    function note(i) {
+      if (!show.sound || !audio()) return;
+      if (ac.state === 'suspended') ac.resume();
+      var t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'square';
+      o.frequency.value = NOTES[i];
+      g.gain.setValueAtTime(0.5, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      o.connect(g); g.connect(grit);
+      o.start(t); o.stop(t + 0.2);
+    }
+    function squall() {
+      if (!show.sound || !audio()) return;
+      var t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(), lfo = ac.createOscillator(), depth = ac.createGain();
+      o.type = 'sawtooth';
+      o.frequency.value = NOTES[5] * 2;
+      lfo.frequency.value = 5.5; depth.gain.value = 9;
+      lfo.connect(depth); depth.connect(o.frequency);
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.exponentialRampToValueAtTime(0.35, t + 0.3);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
+      o.connect(g); g.connect(grit);
+      lfo.start(t); o.start(t); o.stop(t + 0.85); lfo.stop(t + 0.85);
+    }
+    /* the toggle click is a gesture: a good moment to create the context */
+    show.onSound.push(function (on) { if (on && audio() && ac.state === 'suspended') ac.resume(); });
+
+    function ring(el, dir) {
+      if (!show.motion) return;
+      el.style.setProperty('--er-pluck', (dir > 0 ? 12 : -12) + 'px');
+      el.classList.remove('er-string--ring');
+      void el.offsetWidth;
+      el.classList.add('er-string--ring');
+    }
+    function flash(cls, ms) {
+      if (!show.motion) return;
+      strum.classList.add(cls);
+      setTimeout(function () { strum.classList.remove(cls); }, ms);
+    }
+    function pluck(i, dir, now) {
+      ring(strings[i], dir);
+      note(i);
+      crossings.push(now);
+      while (crossings.length && now - crossings[0] > 300) crossings.shift();
+      if (crossings.length >= 4) {
+        crossings = [];
+        strums.push(now);
+        while (strums.length && now - strums[0] > 10000) strums.shift();
+        /* the bloom is rate-limited to one every 500 ms; the count is not */
+        if (now - lastBloom > 500) {
+          lastBloom = now;
+          flash('er-strum--bloom', 500);
+          flash('er-strum--shake', 90);
+        }
+        if (strums.length >= 5 && now > feedbackUntil) feedback(now);
+      }
+    }
+    function feedback(now) {
+      strums = [];
+      feedbackUntil = now + 10000;
+      flash('er-strum--feedback', 800);
+      squall();
+      if (show.shove) show.shove();
+      var ticker = doc.querySelector('.er-ticker');
+      if (ticker && show.motion) {
+        ticker.classList.add('er-ticker--fast');
+        setTimeout(function () { ticker.classList.remove('er-ticker--fast'); }, 10000);
+      }
+    }
+
+    function move(e) {
+      var rc = box.getBoundingClientRect(), y = e.clientY - rc.top, now = e.timeStamp || Date.now();
+      if (prevY !== null) {
+        for (var i = 0; i < strings.length; i++) {
+          var sy = i * 14 + 8;
+          if ((prevY - sy) * (y - sy) < 0) pluck(i, y > prevY ? 1 : -1, now);
+        }
+      }
+      prevY = y;
+    }
+    function reset() { prevY = null; }
+    strum.addEventListener('pointerdown', function (e) { prevY = null; move(e); });
+    strum.addEventListener('pointermove', move);
+    strum.addEventListener('pointerleave', reset);
+    strum.addEventListener('pointercancel', reset);
   })();
 })();
