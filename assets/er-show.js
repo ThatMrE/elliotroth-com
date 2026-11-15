@@ -106,7 +106,7 @@
 
     function layout() {
       W = floor.clientWidth; H = floor.clientHeight;
-      var n = items.length, cols = W > 900 ? 5 : W > 560 ? 4 : 3, rows = Math.ceil(n / cols);
+      var n = items.length, cols = W > 900 ? 5 : W > 600 ? 4 : 2, rows = Math.ceil(n / cols);
       /* home positions cluster toward the middle of the band, like a crowd does */
       var cw = W / cols, rh = H * 0.78 / rows, top0 = H * 0.11;
       bodies = items.map(function (el, i) {
@@ -141,8 +141,8 @@
         dx = b.x - a.x; dy = b.y - a.y;
         ox = (a.w + b.w) * 0.47 - Math.abs(dx); oy = (a.h + b.h) * 0.46 - Math.abs(dy);
         if (ox > 0 && oy > 0) {
-          if (ox < oy) { f = ox * 0.02 * (dx < 0 ? -1 : 1); a.vx -= f; b.vx += f; }
-          else { f = oy * 0.02 * (dy < 0 ? -1 : 1); a.vy -= f; b.vy += f; }
+          if (ox < oy) { f = ox * 0.03 * (dx < 0 ? -1 : 1); a.vx -= f; b.vx += f; }
+          else { f = oy * 0.03 * (dy < 0 ? -1 : 1); a.vy -= f; b.vy += f; }
         }
       }
       for (i = 0; i < n; i++) {
