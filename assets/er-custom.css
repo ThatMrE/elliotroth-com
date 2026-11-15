@@ -2294,3 +2294,364 @@ body:has(.er-hero-band) #header.light { background-color: #0b0b0b !important; }
 
 .er-artifact[data-class="hard"] .er-artifact-meta { color: #0b0b0b; }
 .er-card-icon .er-icon { transform: translateY(4px) scale(0.82); }
+
+/* =========================================================
+   SHOW LAYER — PR 1: the props.
+   The flyer got you to the door; these are the things on the
+   venue floor. CSS and the sprite only: the ticket stub, the
+   setlist taped to the stage, the amp stack, the price tags on
+   string, the cassette labels and the laminates. Nothing here
+   needs JavaScript and nothing changes a colour or a font.
+   ========================================================= */
+
+/* ---- visually hidden, for a word only a screen reader needs ---- */
+.er-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- doors: the ticket stub tears across the top ---- */
+.er-stub {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0;
+  background: #000;
+  padding: 0 20px 20px;
+  overflow: hidden;
+}
+
+.er-stub-keep,
+.er-stub-main {
+  background: var(--er-paper);
+  color: #0b0b0b;
+  font-family: var(--er-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  padding: 11px 16px;
+  white-space: nowrap;
+}
+
+/* the keep: a half-punched edge on its outside end */
+.er-stub-keep {
+  border-right: 2px dashed #0b0b0b;
+  -webkit-mask-image: radial-gradient(circle at 0 50%, transparent 5px, #000 5.5px);
+  mask-image: radial-gradient(circle at 0 50%, transparent 5px, #000 5.5px);
+  padding-left: 20px;
+}
+
+.er-stub-main {
+  display: flex;
+  flex-wrap: wrap;
+  transform-origin: left center;
+  animation: er-tear 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  -webkit-mask-image: radial-gradient(circle at 100% 50%, transparent 5px, #000 5.5px);
+  mask-image: radial-gradient(circle at 100% 50%, transparent 5px, #000 5.5px);
+  padding-right: 20px;
+}
+
+.er-stub-main span + span::before {
+  content: "\00b7";
+  padding-inline: 9px;
+  opacity: 0.5;
+}
+
+@keyframes er-tear {
+  from { transform: translateX(-4px) rotate(0deg); }
+  to { transform: translateX(10px) rotate(0.6deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .er-stub-main { animation: none; transform: translateX(10px) rotate(0.6deg); }
+}
+
+/* ---- the setlist, taped to the stage ---- */
+.er-setlist {
+  background: #000;
+  padding: 26px max(6vw, 20px) 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.er-setlist ol {
+  position: relative;
+  list-style: none;
+  counter-reset: er-song;
+  margin: 0;
+  padding: 14px 28px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 22px;
+  background: var(--er-paper);
+  color: #0b0b0b;
+  transform: rotate(-0.6deg);
+  box-shadow: 4px 4px 0 rgba(255, 45, 111, 0.45);
+}
+
+/* two strips of gaffer tape holding the paper down */
+.er-setlist ol::before,
+.er-setlist ol::after {
+  content: "";
+  position: absolute;
+  top: -11px;
+  width: 64px;
+  height: 22px;
+  background: #0b0b0b;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+.er-setlist ol::before { left: 18px; transform: rotate(-9deg); }
+.er-setlist ol::after { right: 22px; transform: rotate(7deg); }
+
+.er-setlist li {
+  counter-increment: er-song;
+  font-family: var(--er-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+
+.er-setlist li::before {
+  content: counter(er-song, decimal-leading-zero) " ";
+  color: #c4004a;
+  margin-right: 2px;
+}
+
+.er-setlist a {
+  color: #0b0b0b;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.er-setlist a:hover,
+.er-setlist a:focus-visible {
+  border-bottom-color: #c4004a;
+  outline: none;
+}
+
+.er-setlist a:focus-visible { outline: 2px solid #c4004a; outline-offset: 2px; }
+
+/* the retired song: still on the sheet, crossed out in pen */
+.er-setlist-cut { color: #66615a; }
+.er-setlist-cut::before { color: #66615a; }
+.er-setlist-cut > span:first-child { text-decoration: line-through 3px #c4004a; }
+
+/* ---- the stat row is an amp stack ---- */
+.er-section .er-stats { gap: 14px; }
+
+.er-stat {
+  position: relative;
+  padding: 16px 14px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-top: 6px solid #0b0b0b;
+  box-shadow: inset 0 2px 0 var(--er-acid);
+}
+
+/* the speaker grille along the foot of each head */
+.er-stat::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 6px;
+  height: 8px;
+  pointer-events: none;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 2px, transparent 2px 5px);
+}
+
+/* ---- the coaching tickets become price tags on string ---- */
+.er-ticket { padding-top: 38px; }
+.er-section .er-ticket-kind { position: relative; }
+
+/* the punched hole */
+.er-section .er-ticket-kind::before {
+  content: "";
+  position: absolute;
+  top: -22px;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #0b0b0b;
+  border: 3px solid var(--er-paper);
+}
+
+/* the string, up and out of the card */
+.er-ticket::after {
+  content: "";
+  position: absolute;
+  top: -22px;
+  left: 28px;
+  width: 0;
+  height: 44px;
+  border-left: 2px solid var(--er-paper);
+  transform: rotate(38deg);
+  transform-origin: bottom center;
+  pointer-events: none;
+}
+
+.er-ticket--pick .er-ticket-kind::before { border-color: var(--er-acid); }
+.er-ticket--pick::after { border-left-color: var(--er-acid); }
+
+/* ---- press pills become cassette labels ---- */
+.er-pills--tape a {
+  position: relative;
+  border-radius: 0;
+  border: 2px solid var(--er-paper);
+  background: var(--er-paper);
+  color: #0b0b0b;
+  font-family: var(--er-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  padding: 11px 50px 11px 36px;
+}
+
+/* the A-side mark */
+.er-pills--tape a::before {
+  content: "A";
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.6rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border: 1.5px solid #0b0b0b;
+}
+
+/* two spindle holes */
+.er-pills--tape a::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  width: 30px;
+  height: 14px;
+  transform: translateY(-50%);
+  background: radial-gradient(circle, transparent 3px, #0b0b0b 3.5px 5px, transparent 5.5px) 0 0 / 15px 14px repeat-x;
+}
+
+.er-pills--tape a:hover { background: var(--er-acid); border-color: var(--er-acid); color: #0b0b0b; }
+
+/* ---- awards hang from a lanyard as laminates ---- */
+.er-pills--laminate {
+  position: relative;
+  padding-top: 30px;
+  gap: 16px 14px;
+}
+
+/* the lanyard */
+.er-pills--laminate::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 9px;
+  border-top: 2px dashed var(--er-hot);
+}
+
+.er-pills--laminate li { position: relative; }
+
+/* the clip between the lanyard and the card */
+.er-pills--laminate li::before {
+  content: "";
+  position: absolute;
+  left: 22px;
+  top: -21px;
+  height: 21px;
+  border-left: 2px solid var(--er-hot);
+}
+
+.er-pills--laminate a {
+  position: relative;
+  display: block;
+  border-radius: 0;
+  border: 2px solid var(--er-paper);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 24px 16px 11px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+
+.er-pills--laminate a::before {
+  content: "Backstage";
+  position: absolute;
+  top: 6px;
+  left: 16px;
+  font-family: var(--er-mono);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--er-acid);
+}
+
+.er-pills--laminate a:hover { border-color: var(--er-acid); background: rgba(242, 255, 61, 0.07); }
+
+/* ---- a strip of gaffer tape, for holding anything down ---- */
+.er-tape {
+  position: absolute;
+  width: 64px;
+  height: 22px;
+  background: #0b0b0b;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .er-stub { padding-bottom: 14px; }
+  .er-stub-keep, .er-stub-main { font-size: 0.62rem; padding-block: 9px; }
+  .er-setlist { padding-block: 22px 24px; }
+  .er-setlist ol { padding: 12px 18px 10px; gap: 4px 14px; }
+  .er-setlist li { font-size: 0.68rem; }
+  .er-pills--laminate { gap: 16px 10px; }
+}
+
+/* the heads need their numerals on one line */
+.er-section .er-stats { grid-template-columns: repeat(auto-fit, minmax(min(100%, 168px), 1fr)); }
+.er-stat b { white-space: nowrap; font-size: clamp(1.4rem, 2.3vw, 2rem); }
+
+/* on newsprint the labels are printed in black: a black cassette label
+   with paper type, a laminate with a black edge and a white face */
+.er-section--light .er-pills--tape a {
+  background: #0b0b0b;
+  border-color: #0b0b0b;
+  color: var(--er-paper);
+}
+
+.er-section--light .er-pills--tape a::before { border-color: var(--er-paper); }
+
+.er-section--light .er-pills--tape a::after {
+  background: radial-gradient(circle, transparent 3px, var(--er-paper) 3.5px 5px, transparent 5.5px) 0 0 / 15px 14px repeat-x;
+}
+
+.er-section--light .er-pills--tape a:hover { background: #c4004a; border-color: #c4004a; color: #fff; }
+
+.er-section--light .er-pills--laminate::before { border-top-color: #c4004a; }
+.er-section--light .er-pills--laminate li::before { border-left-color: #c4004a; }
+
+.er-section--light .er-pills--laminate a {
+  border-color: #0b0b0b;
+  background: #ffffff;
+}
+
+.er-section--light .er-pills--laminate a::before { color: #c4004a; }
+.er-section--light .er-pills--laminate a:hover { border-color: #c4004a; background: #ffffff; }
