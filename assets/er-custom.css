@@ -2772,3 +2772,171 @@ body:has(.er-hero-band) #header.light { background-color: #0b0b0b !important; }
 @media (max-width: 600px) {
   .er-sound { right: 12px; bottom: 12px; padding: 9px 11px; }
 }
+
+/* =========================================================
+   SHOW LAYER — PR 3: the pit.
+   A band of ideas as physical objects. Without the script, or under
+   reduced motion, it is a still, deliberate pile laid out by flexbox;
+   with it, er-show.js takes the stickers absolute and runs them.
+   ========================================================= */
+
+.er-pit-band { padding-bottom: 0; }
+.er-pit-band .er-head { margin-bottom: 26px; }
+
+.er-pit {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-items: center;
+  min-height: 520px;
+  overflow: hidden;
+  touch-action: pan-y;
+  border-top: 2px dashed rgba(255, 255, 255, 0.2);
+  background:
+    radial-gradient(circle at 28% 74%, rgba(255, 255, 255, 0.06) 0 110px, transparent 111px),
+    radial-gradient(circle at 73% 28%, rgba(255, 255, 255, 0.05) 0 88px, transparent 89px),
+    radial-gradient(rgba(255, 255, 255, 0.13) 1px, transparent 1.4px) 0 0 / 3px 3px;
+}
+
+/* the still pile: flexbox, every sticker at its own tilt */
+.er-pit-floor {
+  list-style: none;
+  margin: 0;
+  padding: 26px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 12px 16px;
+}
+
+.er-pit-floor li { margin: 0; transform: rotate(var(--er-tilt, -3deg)); }
+.er-pit-floor li:nth-child(2n) { --er-tilt: 4deg; }
+.er-pit-floor li:nth-child(3n) { --er-tilt: -7deg; }
+.er-pit-floor li:nth-child(5n + 2) { --er-tilt: 7deg; }
+.er-pit-floor li:nth-child(7n + 4) { --er-tilt: -1deg; }
+
+.er-idea {
+  position: relative;
+  display: inline-block;
+  font-family: var(--er-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 11px 15px;
+  color: #0b0b0b !important;
+  background: var(--er-acid);
+  text-decoration: none !important;
+  box-shadow: 4px 4px 0 var(--er-hot);
+  transition: filter 0.12s ease;
+}
+
+.er-idea[data-c="hot"] { background: var(--er-hot); box-shadow: 4px 4px 0 var(--er-acid); }
+
+/* a paper scrap with a torn edge: no shadow, the clip would eat it */
+.er-idea[data-c="paper"] {
+  background: var(--er-paper);
+  box-shadow: none;
+  padding: 13px 17px;
+  clip-path: polygon(0 5%, 7% 0, 16% 7%, 29% 0, 41% 6%, 55% 0, 68% 7%, 81% 1%, 92% 6%, 100% 0, 100% 95%, 93% 100%, 82% 94%, 69% 100%, 57% 93%, 44% 100%, 30% 94%, 17% 100%, 7% 93%, 0 100%);
+}
+
+.er-idea[data-size="s"] { font-size: 0.68rem; padding: 9px 12px; }
+.er-idea[data-size="l"] { font-size: 0.98rem; padding: 13px 19px; }
+.er-idea[data-c="paper"][data-size="s"] { padding: 11px 14px; }
+.er-idea[data-c="paper"][data-size="l"] { padding: 15px 21px; }
+
+.er-idea:hover { filter: brightness(1.08); }
+.er-idea:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+/* the back of the sticker: one line of proof, shown on a stage dive */
+.er-section .er-idea-front { display: inline; }
+
+.er-section .er-idea-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  background: #0b0b0b;
+  color: var(--er-paper);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.er-idea--dive { animation: er-dive 1.6s ease both; }
+.er-idea--dive .er-idea-back { animation: er-dive-back 1.6s ease both; }
+
+@keyframes er-dive {
+  0%, 100% { transform: none; }
+  35%, 70% { transform: translateY(-22px) scale(1.1); }
+}
+
+@keyframes er-dive-back {
+  0%, 22% { opacity: 0; }
+  40%, 82% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* the one that's being crowd-surfed rides above the rest */
+.er-pit--live .er-idea--surf { filter: brightness(1.1); }
+
+/* live: the band locks to its height and the script owns every position */
+.er-pit--live { display: block; height: 520px; }
+.er-pit--live .er-pit-floor { display: block; padding: 0; height: 100%; }
+
+.er-pit--live .er-pit-floor li {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: none;
+  will-change: transform;
+}
+
+/* the lost shoe: the one thing in the pit that doesn't move */
+.er-pit-shoe {
+  position: absolute;
+  right: 18px;
+  bottom: 12px;
+  z-index: 2;
+  color: var(--er-paper);
+  opacity: 0.72;
+  font-size: 30px;
+  line-height: 0;
+  transform: rotate(-24deg);
+}
+
+.er-pit-shoe:hover,
+.er-pit-shoe:focus-visible { opacity: 1; outline-offset: 4px; }
+
+@media (max-width: 900px) {
+  .er-pit { min-height: 460px; }
+  .er-pit--live { height: 460px; }
+}
+
+@media (max-width: 600px) {
+  .er-pit { min-height: 500px; }
+  .er-pit--live { height: 500px; }
+  .er-pit-floor { padding: 18px 12px; gap: 9px 10px; }
+  .er-idea { font-size: 0.66rem; padding: 9px 11px; }
+  .er-idea[data-size="s"] { font-size: 0.58rem; padding: 7px 9px; }
+  .er-idea[data-size="l"] { font-size: 0.76rem; padding: 10px 13px; }
+  .er-idea[data-c="paper"] { padding: 11px 13px; }
+  .er-idea[data-c="paper"][data-size="s"] { padding: 9px 11px; }
+  .er-idea[data-c="paper"][data-size="l"] { padding: 12px 15px; }
+  .er-pit-shoe { font-size: 24px; right: 12px; bottom: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .er-idea--dive, .er-idea--dive .er-idea-back { animation: none; }
+}
