@@ -278,7 +278,7 @@ def shell():
 HEAD, FOOT = shell()
 
 
-def page(title, desc, path, body, kind='website', extra_head='', script='', body_class=''):
+def page(title, desc, path, body, kind='website', extra_head='', script='', body_class='', scripts=()):
     url = SITE + path
     full = f'{title} — Elliot Roth' if title else 'Elliot Roth'
     h = HEAD
@@ -298,7 +298,8 @@ def page(title, desc, path, body, kind='website', extra_head='', script='', body
         h = h.replace('<body class="', f'<body class="{body_class} ', 1)
     main = (f'<main class="container" id="page" role="main">\n<article class="sections er-zine" id="sections">\n'
             f'{body}\n</article>\n</main>')
-    return h + main + (f'\n<script>{script}</script>' if script else '') + FOOT
+    tags = ''.join(f'\n<script defer="" src="{src}"></script>' for src in scripts)
+    return h + main + tags + (f'\n<script>{script}</script>' if script else '') + FOOT
 
 
 def write(path, text):
@@ -484,6 +485,9 @@ def index_page(pieces, elsewhere, desk):
             year = e['date'][:4]
             rows.append(f'<li aria-hidden="true" class="er-zine-year">{year}</li>')
         rows.append(row(e, total))
+    wave_json = json.dumps([{'no': e['no'], 't': e['title'], 'w': e.get('words') if 'slug' in e else 0,
+                             'here': 'slug' in e, 'u': f'/writing/{e["slug"]}/' if 'slug' in e else e['url']}
+                            for e in numbered], ensure_ascii=False).replace('</', '<\\/')
     shelves = ''.join(f'<li id="{k}"><b>{SHELVES[k][0]}</b> <span>{SHELVES[k][1]}</span></li>'
                       for k in SHELVES if counts[k])
 
@@ -492,6 +496,8 @@ def index_page(pieces, elsewhere, desk):
 <p class="er-eyebrow">The zine</p>
 <h1 class="er-h2">Things I wrote down.</h1>
 <p class="er-lede">Essays, short fiction, field notes from experiments run on myself, and the odd confession. Every piece has a number, oldest first. The newer ones live here in full; the older ones are still on Medium, and the weekly letter is on Substack.</p>
+<div aria-hidden="true" class="er-wave"></div>
+<script id="er-zine-data" type="application/json">{wave_json}</script>
 <p class="er-zine-count"><span><b>{len(numbered)}</b> pieces</span><span><b>{len(pieces)}</b> on this site</span><span><b>{words_here:,}</b> words here</span><span><b>{len(dispatches)}</b> dispatches</span></p>
 </div>
 </section>
@@ -512,7 +518,8 @@ def index_page(pieces, elsewhere, desk):
 </section>
 {SUBSCRIBE}'''
     desc = 'Essays, short fiction, field notes and personal pieces by Elliot Roth, numbered oldest first.'
-    return page('Writing', desc, '/writing/', body, script=INDEX_SCRIPT)
+    return page('Writing', desc, '/writing/', body, script=INDEX_SCRIPT,
+                scripts=('/assets/vendor/d3-7.9.0.min.js', '/assets/er-show.js'))
 
 
 def feed(pieces):

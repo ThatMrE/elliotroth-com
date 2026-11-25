@@ -41,6 +41,111 @@
   });
   doc.body.appendChild(btn);
 
+  /* ---- the synth: one AudioContext for every instrument on the page ----
+     Nothing exists until sound is on and a gesture arrives. Master gain
+     0.22, never above 0.25, through a compressor so stacked notes don't
+     clip. Notes come from a major pentatonic scale, so any two agree
+     (the same trick that keeps a grid sequencer from ever sounding wrong). */
+  var synth = (function () {
+    var ac = null, master = null, grit = null, noiseBuf = null;
+    var PENTA = [0, 2, 4, 7, 9];
+    function ctx() {
+      if (!show.sound) return null;
+      if (!ac) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        ac = new AC();
+        var comp = ac.createDynamicsCompressor();
+        comp.threshold.value = -18; comp.ratio.value = 6;
+        master = ac.createGain();
+        master.gain.value = 0.22; /* never above 0.25 */
+        master.connect(comp); comp.connect(ac.destination);
+        grit = ac.createWaveShaper();
+        var curve = new Float32Array(256);
+        for (var i = 0; i < 256; i++) curve[i] = Math.tanh((i / 127.5 - 1) * 3);
+        grit.curve = curve;
+        grit.connect(master);
+        show.audio = ac;
+        show.master = master;
+      }
+      if (ac.state === 'suspended') ac.resume();
+      return ac;
+    }
+    /* step n of the pentatonic scale, counted up from C3 (MIDI 48) */
+    function freq(step, base) {
+      var oct = Math.floor(step / 5), deg = ((step % 5) + 5) % 5;
+      return 440 * Math.pow(2, ((base || 48) + oct * 12 + PENTA[deg] - 69) / 12);
+    }
+    function tone(f, o) {
+      o = o || {};
+      var c = ctx();
+      if (!c) return;
+      var t = c.currentTime + (o.at || 0), d = o.dur || 0.25, v = o.vel == null ? 0.4 : o.vel;
+      var osc = c.createOscillator(), g = c.createGain();
+      osc.type = o.wave || 'triangle';
+      osc.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(v, t + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      osc.connect(g); g.connect(o.dirty ? grit : master);
+      osc.start(t); osc.stop(t + d + 0.02);
+    }
+    function noise(c) {
+      if (!noiseBuf) {
+        noiseBuf = c.createBuffer(1, c.sampleRate * 0.5, c.sampleRate);
+        var data = noiseBuf.getChannelData(0);
+        for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      }
+      var src = c.createBufferSource();
+      src.buffer = noiseBuf;
+      return src;
+    }
+    /* a three-piece kit: kick, snare, hat */
+    function drum(kind, at) {
+      var c = ctx();
+      if (!c) return;
+      var t = c.currentTime + (at || 0), g = c.createGain();
+      g.connect(master);
+      if (kind === 'kick') {
+        var o = c.createOscillator();
+        o.frequency.setValueAtTime(150, t);
+        o.frequency.exponentialRampToValueAtTime(45, t + 0.18);
+        g.gain.setValueAtTime(0.9, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        o.connect(g); o.start(t); o.stop(t + 0.32);
+        return;
+      }
+      var n = noise(c), f = c.createBiquadFilter();
+      f.type = kind === 'snare' ? 'bandpass' : 'highpass';
+      f.frequency.value = kind === 'snare' ? 1800 : 7000;
+      g.gain.setValueAtTime(kind === 'snare' ? 0.7 : 0.35, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + (kind === 'snare' ? 0.16 : 0.05));
+      n.connect(f); f.connect(g); n.start(t); n.stop(t + 0.2);
+    }
+    return { ctx: ctx, freq: freq, tone: tone, drum: drum, grit: function () { ctx(); return grit; } };
+  })();
+  show.synth = synth;
+  /* the toggle click is a gesture: the moment to create the context */
+  show.onSound.push(function (on) { if (on) synth.ctx(); });
+
+  /* the first time sound goes on in a visit, say what plays */
+  var toast = doc.createElement('p');
+  toast.className = 'er-toast';
+  toast.setAttribute('role', 'status');
+  doc.body.appendChild(toast);
+  btn.title = 'Sound for the strings, the keyboard, the headline and the catalog';
+  show.onSound.push(function (on) {
+    if (!on) return;
+    var told = false;
+    try { told = sessionStorage.getItem('er-told') === '1'; sessionStorage.setItem('er-told', '1'); } catch (e) {}
+    if (told) return;
+    toast.textContent = doc.querySelector('.er-seq, .er-strum, .er-wave')
+      ? 'Sound on. Type any letter, sweep the headline, drag across the strings, play the catalog.'
+      : 'Sound on. Type away.';
+    toast.classList.add('er-toast--on');
+    setTimeout(function () { toast.classList.remove('er-toast--on'); }, 4200);
+  });
+
   /* ---- doors: one hand stamp where you first click, once per visit ---- */
   var stamped = false;
   try { stamped = sessionStorage.getItem('er-stamped') === '1'; } catch (e) {}
@@ -255,39 +360,13 @@
     var prevY = null, crossings = [], strums = [], lastBloom = 0, feedbackUntil = 0;
     var NOTES = [82.41, 110, 146.83, 196, 246.94, 329.63];
 
-    /* ---- sound: nothing exists until the toggle is on and a gesture arrives ---- */
-    var ac = null, master = null, grit = null;
-    function audio() {
-      if (ac) return ac;
-      var AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return null;
-      ac = new AC();
-      grit = ac.createWaveShaper();
-      var curve = new Float32Array(256);
-      for (var i = 0; i < 256; i++) curve[i] = Math.tanh((i / 127.5 - 1) * 3);
-      grit.curve = curve;
-      master = ac.createGain();
-      master.gain.value = 0.22; /* never above 0.25 */
-      grit.connect(master);
-      master.connect(ac.destination);
-      show.audio = ac;
-      show.master = master;
-      return ac;
-    }
     function note(i) {
-      if (!show.sound || !audio()) return;
-      if (ac.state === 'suspended') ac.resume();
-      var t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
-      o.type = 'square';
-      o.frequency.value = NOTES[i];
-      g.gain.setValueAtTime(0.5, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-      o.connect(g); g.connect(grit);
-      o.start(t); o.stop(t + 0.2);
+      synth.tone(NOTES[i], { wave: 'square', dur: 0.18, vel: 0.5, dirty: true });
     }
     function squall() {
-      if (!show.sound || !audio()) return;
-      var t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(), lfo = ac.createOscillator(), depth = ac.createGain();
+      var c = synth.ctx();
+      if (!c) return;
+      var t = c.currentTime, o = c.createOscillator(), g = c.createGain(), lfo = c.createOscillator(), depth = c.createGain();
       o.type = 'sawtooth';
       o.frequency.value = NOTES[5] * 2;
       lfo.frequency.value = 5.5; depth.gain.value = 9;
@@ -295,11 +374,9 @@
       g.gain.setValueAtTime(0.001, t);
       g.gain.exponentialRampToValueAtTime(0.35, t + 0.3);
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
-      o.connect(g); g.connect(grit);
+      o.connect(g); g.connect(synth.grit());
       lfo.start(t); o.start(t); o.stop(t + 0.85); lfo.stop(t + 0.85);
     }
-    /* the toggle click is a gesture: a good moment to create the context */
-    show.onSound.push(function (on) { if (on && audio() && ac.state === 'suspended') ac.resume(); });
 
     function ring(el, dir) {
       if (!show.motion) return;
@@ -382,5 +459,298 @@
     /* warmed up on the first card until someone points at another */
     aim(cards[0]);
     window.addEventListener('resize', function () { if (lights.classList.contains('er-lights--on')) aim(cards[0]); });
+  })();
+
+  /* =================================================================
+     THE MUSICAL LAYER (needs d3). Every instrument here plays the
+     site's own data, and every one works silently: sound only follows
+     the SOUND toggle, motion only follows prefers-reduced-motion.
+     ================================================================= */
+  var d3 = window.d3;
+
+  /* ---- the back catalog is a drum machine ----
+     After Chrome Music Lab's Song Maker: a grid of years across and
+     classes down, one cell per year and class, lit when a project in
+     the catalog below belongs there. Play sweeps a playhead across it:
+     wet projects hit the kick, hard ones the snare, infra the hat, and
+     each project adds a note on top. */
+  var built = doc.querySelector('#built .er-built');
+  if (d3 && built) (function () {
+    var CLASSES = [
+      { key: 'wet', label: 'wet', drum: 'kick', base: 0, ink: '#f2ff3d' },
+      { key: 'hard', label: 'hard', drum: 'snare', base: 5, ink: '#ff2d6f' },
+      { key: 'infra', label: 'infra', drum: 'hat', base: 10, ink: '#f5f2e8' }
+    ];
+    var cards = [].slice.call(built.querySelectorAll('.er-artifact'));
+    var items = cards.map(function (el) {
+      var meta = el.querySelectorAll('.er-artifact-meta span');
+      return { el: el, year: meta[0] ? meta[0].textContent.trim() : '', cls: el.getAttribute('data-class'),
+               title: (el.querySelector('h3') || {}).textContent || '' };
+    }).filter(function (d) { return /^\d{4}$/.test(d.year); });
+    if (!items.length) return;
+    var years = Array.from(new Set(items.map(function (d) { return d.year; }))).sort();
+    var cells = [];
+    years.forEach(function (y, xi) {
+      CLASSES.forEach(function (c, yi) {
+        var here = items.filter(function (d) { return d.year === y && d.cls === c.key; });
+        cells.push({ year: y, cls: c, x: xi, y: yi, items: here });
+      });
+    });
+
+    var wrap = doc.createElement('div');
+    wrap.className = 'er-seq';
+    wrap.innerHTML = '<div class="er-seq-bar"><button class="er-btn er-seq-play" type="button" aria-pressed="false">' +
+      '<svg class="er-icon"><use href="#er-i-play"></use></svg> <span>Play the catalog</span></button>' +
+      '<p class="er-seq-key">Each lit square is a project below. Wet is the kick, hard the snare, infra the hat.</p></div>' +
+      '<div class="er-seq-grid" aria-hidden="true"></div>';
+    built.parentNode.insertBefore(wrap, built);
+    var grid = wrap.querySelector('.er-seq-grid'), btn = wrap.querySelector('.er-seq-play');
+    var svg = d3.select(grid).append('svg').attr('class', 'er-seq-svg');
+    var playhead, rects, W = 0, H = 0, lab = 54, top = 26, cw = 0, ch = 0;
+
+    function draw() {
+      W = grid.clientWidth || 600;
+      ch = W < 520 ? 34 : 44;
+      lab = W < 520 ? 42 : 58;
+      cw = (W - lab) / years.length;
+      H = top + ch * CLASSES.length + 4;
+      svg.attr('viewBox', '0 0 ' + W + ' ' + H).attr('width', W).attr('height', H);
+      svg.selectAll('*').remove();
+      svg.append('g').selectAll('text').data(years).join('text')
+        .attr('class', 'er-seq-year').attr('x', function (d, i) { return lab + cw * i + cw / 2; }).attr('y', 16)
+        .attr('text-anchor', 'middle').text(function (d) { return W < 520 ? "'" + d.slice(2) : d; });
+      svg.append('g').selectAll('text').data(CLASSES).join('text')
+        .attr('class', 'er-seq-cls').attr('x', 0).attr('y', function (d, i) { return top + ch * i + ch / 2 + 4; })
+        .text(function (d) { return d.label; });
+      playhead = svg.append('rect').attr('class', 'er-seq-head').attr('y', top - 4).attr('height', ch * CLASSES.length + 6)
+        .attr('width', cw).attr('x', lab).attr('opacity', 0);
+      var g = svg.append('g').selectAll('g').data(cells).join('g')
+        .attr('class', function (d) { return 'er-seq-cell' + (d.items.length ? ' is-lit' : ''); })
+        .attr('transform', function (d) { return 'translate(' + (lab + cw * d.x + cw / 2) + ',' + (top + ch * d.y + ch / 2) + ')'; });
+      rects = g.append('rect')
+        .attr('x', -(cw - 6) / 2).attr('y', -(ch - 6) / 2).attr('width', cw - 6).attr('height', ch - 6)
+        .attr('fill', function (d) { return d.items.length ? d.cls.ink : 'none'; });
+      g.filter(function (d) { return d.items.length > 1; }).append('text')
+        .attr('class', 'er-seq-n').attr('text-anchor', 'middle').attr('y', 5).text(function (d) { return '×' + d.items.length; });
+      g.append('title').text(function (d) {
+        return d.items.length ? d.year + ' · ' + d.items.map(function (i) { return i.title; }).join(', ') : d.year + ' · ' + d.cls.label + ': nothing filed';
+      });
+      g.filter(function (d) { return d.items.length; }).style('cursor', 'pointer').on('click', function (e, d) { hit(d, 0); });
+    }
+
+    function hit(d, at) {
+      d.items.forEach(function (it, k) {
+        synth.tone(synth.freq(d.cls.base + ((d.x + k * 2) % 5)), { at: at, dur: 0.3, vel: 0.32, wave: d.cls.key === 'hard' ? 'square' : 'triangle' });
+        it.el.classList.add('er-artifact--hit');
+        setTimeout(function () { it.el.classList.remove('er-artifact--hit'); }, 420);
+      });
+      if (d.items.length) synth.drum(d.cls.drum, at);
+      var node = svg.selectAll('.er-seq-cell').filter(function (c) { return c === d; });
+      if (show.motion) {
+        node.select('rect').interrupt().attr('transform', 'scale(1.18)')
+          .transition().duration(260).ease(d3.easeBackOut).attr('transform', 'scale(1)');
+      }
+    }
+
+    var timer = null, col = -1, BEAT = 380;
+    function stop() {
+      if (timer) clearInterval(timer);
+      timer = null; col = -1;
+      playhead.attr('opacity', 0);
+      btn.setAttribute('aria-pressed', 'false');
+      btn.querySelector('span').textContent = 'Play the catalog';
+      btn.querySelector('use').setAttribute('href', '#er-i-play');
+    }
+    function step() {
+      col++;
+      if (col >= years.length) { stop(); return; }
+      var x = lab + cw * col;
+      if (show.motion) playhead.attr('opacity', 1).transition().duration(120).attr('x', x);
+      else playhead.attr('opacity', 1).attr('x', x);
+      cells.filter(function (c) { return c.x === col && c.items.length; }).forEach(function (c) { hit(c, 0); });
+    }
+    btn.addEventListener('click', function () {
+      if (timer) { stop(); return; }
+      synth.ctx();
+      btn.setAttribute('aria-pressed', 'true');
+      btn.querySelector('span').textContent = 'Stop';
+      btn.querySelector('use').setAttribute('href', '#er-i-pause');
+      playhead.attr('x', lab);
+      step();
+      timer = setInterval(step, BEAT);
+    });
+
+    draw();
+    var rz = 0;
+    window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { var was = timer; if (was) stop(); draw(); }, 150); });
+  })();
+
+  /* ---- the keyboard is an instrument ----
+     After Patatap: outside a form, every letter or digit plays a note
+     and throws a shape on the screen. After Typatone: inside the
+     contact form, typing plays your message back, quietly, one note a
+     letter. Keys with a modifier, held keys and every other key are
+     left alone, so shortcuts, Tab, Enter and the arrows work as ever. */
+  (function () {
+    var SHAPES = d3 ? [d3.symbolCircle, d3.symbolStar, d3.symbolTriangle, d3.symbolDiamond, d3.symbolCross, d3.symbolWye, d3.symbolSquare] : [];
+    var INKS = ['#f2ff3d', '#ff2d6f', '#f5f2e8'];
+    var layer = null, live = 0;
+    function burst(code) {
+      if (!d3 || !show.motion || live > 24) return;
+      if (!layer) layer = d3.select(doc.body).append('svg').attr('class', 'er-keys-layer').attr('aria-hidden', 'true').attr('focusable', 'false');
+      var w = window.innerWidth, h = window.innerHeight;
+      var x = w * (0.12 + 0.76 * Math.random()), y = h * (0.18 + 0.64 * Math.random());
+      var ink = INKS[code % INKS.length], g = layer.append('g').attr('transform', 'translate(' + x + ',' + y + ')');
+      live++;
+      g.append('circle').attr('r', 6).attr('fill', 'none').attr('stroke', ink).attr('stroke-width', 4)
+        .transition().duration(700).ease(d3.easeCubicOut).attr('r', 130).attr('stroke-width', 0.5).style('opacity', 0);
+      g.append('path').attr('d', d3.symbol(SHAPES[code % SHAPES.length], 3600)()).attr('fill', ink)
+        .attr('transform', 'scale(0.1) rotate(0)')
+        .transition().duration(520).ease(d3.easeBackOut.overshoot(2.4)).attr('transform', 'scale(1) rotate(' + (code % 2 ? 90 : -90) + ')')
+        .transition().duration(380).ease(d3.easeCubicIn).attr('transform', 'scale(0.6) rotate(180)').style('opacity', 0);
+      d3.range(7).forEach(function (i) {
+        var a = (i / 7) * Math.PI * 2 + code, r = 70 + 50 * Math.random();
+        g.append('circle').attr('r', 5).attr('fill', INKS[(code + i) % INKS.length])
+          .transition().duration(650).ease(d3.easeCubicOut)
+          .attr('cx', Math.cos(a) * r).attr('cy', Math.sin(a) * r).attr('r', 1).style('opacity', 0);
+      });
+      setTimeout(function () { g.remove(); live--; }, 1150);
+    }
+    doc.addEventListener('keydown', function (e) {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      var k = (e.key || '').toLowerCase();
+      if (!/^[a-z0-9]$/.test(k)) return;
+      var code = /[0-9]/.test(k) ? 26 + +k : k.charCodeAt(0) - 97;
+      var t = e.target || {};
+      var field = t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName || '');
+      if (field) {
+        /* Typatone: only in the contact form, and only for typing */
+        if (t.form && t.form.getAttribute('name') === 'contact' && /^(text|email|textarea)$/i.test(t.type || t.tagName)) {
+          var vowel = 'aeiou'.indexOf(k) >= 0;
+          synth.tone(synth.freq((code % 10) + (vowel ? 10 : 5)), { wave: 'sine', dur: 0.22, vel: 0.14 });
+        }
+        return;
+      }
+      synth.tone(synth.freq(code % 15 + 3), { wave: 'triangle', dur: 0.4, vel: 0.42 });
+      burst(code);
+    });
+  })();
+
+  /* ---- the headline is a xylophone ----
+     Sweep across the hero's three words and each letter rings, one
+     step up the scale at a time, and hops. The words stay whole for
+     screen readers: the letters are a decorative copy beside them. */
+  var headline = doc.querySelector('.sqsrte-scaled-text h1');
+  if (headline) (function () {
+    var letters = [];
+    function split(node) {
+      [].slice.call(node.childNodes).forEach(function (n) {
+        if (n.nodeType === 1 && n.tagName !== 'BR') { split(n); return; }
+        if (n.nodeType !== 3 || !n.textContent.trim()) return;
+        var frag = doc.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(doc.createTextNode(part)); return; }
+          var word = doc.createElement('span');
+          word.className = 'er-xylo-word';
+          var said = doc.createElement('span');
+          said.className = 'er-sr';
+          said.textContent = part;
+          var shown = doc.createElement('span');
+          shown.setAttribute('aria-hidden', 'true');
+          part.split('').forEach(function (ch) {
+            var l = doc.createElement('span');
+            l.className = 'er-xylo';
+            l.textContent = ch;
+            l.dataset.i = letters.length;
+            letters.push(l);
+            shown.appendChild(l);
+          });
+          word.appendChild(said); word.appendChild(shown);
+          frag.appendChild(word);
+        });
+        node.replaceChild(frag, n);
+      });
+    }
+    split(headline);
+    headline.classList.add('er-xylo-ready');
+    var last = null;
+    function ring(l) {
+      if (!l || l === last) return;
+      last = l;
+      var i = +l.dataset.i;
+      synth.tone(synth.freq(i % 15 + 5), { wave: 'triangle', dur: 0.3, vel: 0.3 });
+      if (!show.motion) return;
+      l.classList.remove('er-xylo--hop');
+      void l.offsetWidth;
+      l.classList.add('er-xylo--hop');
+    }
+    headline.addEventListener('pointermove', function (e) {
+      var el = doc.elementFromPoint(e.clientX, e.clientY);
+      if (el && el.classList && el.classList.contains('er-xylo')) ring(el);
+    });
+    headline.addEventListener('pointerdown', function (e) {
+      if (e.target.classList && e.target.classList.contains('er-xylo')) { last = null; ring(e.target); }
+    });
+    headline.addEventListener('pointerleave', function () { last = null; });
+  })();
+
+  /* ---- the zine is a waveform ----
+     Every numbered piece is a bar, oldest on the left, as tall as it is
+     long (the square root of its words, so a 3,000-word essay doesn't
+     flatten the rest). Scrub across it and each piece sounds its length:
+     longer is lower, the way a data sonification maps value to pitch.
+     Pieces still on Medium have no word count here; they are the short
+     dashed stubs. Click a bar to open the piece. */
+  var wave = doc.querySelector('.er-wave'), waveData = doc.getElementById('er-zine-data');
+  if (d3 && wave && waveData) (function () {
+    var data = JSON.parse(waveData.textContent).sort(function (a, b) { return a.no - b.no; });
+    var maxW = d3.max(data, function (d) { return d.w; }) || 1;
+    var pitch = d3.scaleQuantize().domain([Math.sqrt(maxW), 0]).range(d3.range(3, 18));
+    var svg = d3.select(wave).append('svg').attr('class', 'er-wave-svg').attr('aria-hidden', 'true');
+    var label = d3.select(wave).append('p').attr('class', 'er-wave-label').attr('aria-hidden', 'true')
+      .text('Scrub across: every piece, oldest first, sounds its length.');
+    var bars, x, y, W, H = 120, last = null;
+
+    function draw() {
+      W = wave.clientWidth || 600;
+      x = d3.scaleBand().domain(data.map(function (d) { return d.no; })).range([0, W]).padding(0.28);
+      y = d3.scaleSqrt().domain([0, maxW]).range([0, H - 14]);
+      svg.attr('viewBox', '0 0 ' + W + ' ' + H).attr('width', W).attr('height', H);
+      svg.selectAll('*').remove();
+      svg.append('line').attr('class', 'er-wave-axis').attr('x1', 0).attr('x2', W).attr('y1', H / 2).attr('y2', H / 2);
+      bars = svg.append('g').selectAll('rect').data(data).join('rect')
+        .attr('class', function (d) { return 'er-wave-bar' + (d.here ? '' : ' er-wave-bar--away'); })
+        .attr('x', function (d) { return x(d.no); }).attr('width', x.bandwidth())
+        .attr('y', H / 2).attr('height', 0);
+      var size = function (d) { return d.here ? Math.max(6, y(d.w)) : 10; };
+      (show.motion ? bars.transition().duration(700).delay(function (d, i) { return i * 18; }).ease(d3.easeBackOut) : bars)
+        .attr('y', function (d) { return H / 2 - size(d) / 2; }).attr('height', size);
+    }
+
+    function at(clientX) {
+      var rc = wave.getBoundingClientRect(), px = clientX - rc.left, best = null, bd = Infinity;
+      data.forEach(function (d) { var c = x(d.no) + x.bandwidth() / 2, dd = Math.abs(c - px); if (dd < bd) { bd = dd; best = d; } });
+      return best;
+    }
+    function touch(d) {
+      if (!d || d === last) return;
+      last = d;
+      synth.tone(synth.freq(d.here ? pitch(Math.sqrt(d.w)) : 17), { wave: d.here ? 'triangle' : 'sine', dur: 0.26, vel: d.here ? 0.34 : 0.14 });
+      bars.classed('is-on', function (b) { return b === d; });
+      label.text('no. ' + String(d.no).padStart(3, '0') + ' \u00b7 ' + d.t + (d.here ? ' \u00b7 ' + d.w.toLocaleString() + ' words' : ' \u00b7 on Medium'));
+    }
+    wave.addEventListener('pointermove', function (e) { touch(at(e.clientX)); });
+    wave.addEventListener('pointerdown', function (e) { last = null; touch(at(e.clientX)); });
+    wave.addEventListener('pointerleave', function () { last = null; bars.classed('is-on', false); });
+    wave.addEventListener('click', function (e) {
+      var d = at(e.clientX);
+      if (!d) return;
+      if (d.here) window.location.href = d.u;
+      else window.open(d.u, '_blank', 'noopener');
+    });
+    draw();
+    var rz = 0;
+    window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(draw, 150); });
   })();
 })();
