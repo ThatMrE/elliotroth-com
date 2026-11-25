@@ -46,6 +46,32 @@ Elliot asks for them by name.
   Receipts, the back catalog and the press pills each state things once.
 - **Work on a branch, open a draft PR.** Netlify deploys `main`.
 
+## The writing section (`/writing/`)
+
+The one part of the site that is generated. Sources live in `writing/_src/`;
+`python3 scripts/build_writing.py` (stdlib only, run from the repo root) turns
+them into `writing/index.html`, `writing/<slug>/index.html`, `writing/feed.xml`,
+the `/writing/` entries in `sitemap.xml`, and the homepage strip between the
+`<!-- writing:latest -->` markers. The output is committed; Netlify runs no
+build. Never hand-edit the generated files — edit the source and rebuild.
+
+- **A new piece:** copy `writing/_src/_template.md`, follow the notes in it,
+  rebuild. A piece without a `no:` gets the next number written back into it.
+- **Numbers are permanent.** Every piece has one, oldest first (No. 0 is the
+  2017 Thought For Food write-up). Don't renumber; a backfilled old piece just
+  takes the next free number.
+- **Pieces that live elsewhere** (older Medium posts, the Substack dispatches)
+  are entries in `writing/_src/elsewhere.json`, listed in the index and linked
+  out. Medium titles marked `title_from_link` were rebuilt from the post URL
+  and may have the wrong capitalisation; when a Medium export arrives, move
+  each into its own `.md` (keeping its number) and drop its JSON entry.
+- **Work in progress** (Sanderson-style progress bars): create
+  `writing/_src/desk.json` as `[{"title": "…", "percent": 40, "note": "…"}]`.
+  No file, no section. Only Elliot's real numbers go in it.
+- Images go in `assets/writing/<slug>/`, at most ~1400px wide; animated GIFs
+  become muted looping `.mp4`s with a `.jpg` poster (the pages pause them
+  under reduced motion).
+
 ## Verifying a change
 
 There is no test suite. Serve locally and check the rendered result:
@@ -55,7 +81,7 @@ python3 -m http.server 8899
 ```
 
 Then, across `/index.html`, `/portfolio/`, `/portfolio/websites/`,
-`/contact/` and `/404.html`:
+`/contact/`, `/404.html`, `/writing/` and every `/writing/<slug>/`:
 
 - no horizontal page scroll at 1280, 768, 390 and 360
   (`document.documentElement.scrollWidth <= window.innerWidth`)
