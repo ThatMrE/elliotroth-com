@@ -5,6 +5,7 @@ title: Dave Grohl was standing in the doorway of the stable
 date: 2023-08-10
 start_here: 2
 shelf: personal
+excerpt: …staring at me while I had my hand halfway inside a horse.
 origin: Medium
 origin_url: https://thatmre.medium.com/dave-grohl-was-standing-in-the-doorway-of-the-stable-staring-at-me-while-i-had-my-hand-halfway-2e6cd57cea38
 tags: personal, teenagers, dave-grohl, stories, rock

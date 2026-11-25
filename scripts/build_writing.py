@@ -242,6 +242,25 @@ def short_date(s):
     return parts[0] if len(parts) == 1 else f'{MONTHS[int(parts[1]) - 1]} {parts[0]}'
 
 
+def num(n):
+    return f'no. {int(n):03d}'
+
+
+def excerpt(p, limit=150):
+    """An explicit excerpt, else the dek, else the prompt, else the opening of the first paragraph."""
+    if p.get('excerpt'):
+        return p['excerpt']
+    if p.get('dek'):
+        return p['dek']
+    if p.get('prompt'):
+        return 'Prompt: ' + p['prompt']
+    for para in re.findall(r'<p>(.*?)</p>', p['html'], re.S):
+        text = html.unescape(re.sub(r'<[^>]+>', '', para)).strip()
+        if len(text) > 40:
+            return text if len(text) <= limit else text[:limit].rsplit(' ', 1)[0].rstrip(',;:') + '\u2026'
+    return ''
+
+
 def minutes(words):
     return max(1, round(words / WPM))
 
@@ -259,7 +278,7 @@ def shell():
 HEAD, FOOT = shell()
 
 
-def page(title, desc, path, body, kind='website', extra_head='', script=''):
+def page(title, desc, path, body, kind='website', extra_head='', script='', body_class=''):
     url = SITE + path
     full = f'{title} — Elliot Roth' if title else 'Elliot Roth'
     h = HEAD
@@ -275,6 +294,8 @@ def page(title, desc, path, body, kind='website', extra_head='', script=''):
                   f'<link href="{url}" rel="canonical"/>\n'
                   f'<link href="{SITE}/writing/feed.xml" rel="alternate" title="Elliot Roth: writing" type="application/rss+xml"/>'
                   + extra_head, 1)
+    if body_class:
+        h = h.replace('<body class="', f'<body class="{body_class} ', 1)
     main = (f'<main class="container" id="page" role="main">\n<article class="sections er-zine" id="sections">\n'
             f'{body}\n</article>\n</main>')
     return h + main + (f'\n<script>{script}</script>' if script else '') + FOOT
@@ -311,7 +332,7 @@ PAUSE_SCRIPT = ("(function(){var m=window.matchMedia&&matchMedia('(prefers-reduc
 def piece_page(p, total, prev, nxt):
     shelf = SHELVES[p['shelf']][0]
     mins = minutes(p['words'])
-    dek = f'<p class="er-lede er-zine-dek">{inline(p["dek"])}</p>' if p.get('dek') else ''
+    dek = f'<p class="er-specimen-dek">{inline(p["dek"])}</p>' if p.get('dek') else ''
     prompt = (f'<aside class="er-prompt"><span class="er-prompt-k">Prompt</span>'
               f'<p>{inline(p["prompt"])}</p></aside>') if p.get('prompt') else ''
     origin = ''
@@ -325,44 +346,47 @@ def piece_page(p, total, prev, nxt):
 
     def step(q, rel):
         if not q:
-            return '<span></span>'
-        arrow = '&larr;' if rel == 'prev' else '&rarr;'
-        label = 'Before' if rel == 'prev' else 'Next'
-        return (f'<a class="er-zine-step er-zine-step--{rel}" href="/writing/{q["slug"]}/" rel="{rel}">'
-                f'<span class="er-zine-step-k">{arrow} {label} &middot; No. {q["no"]}</span>'
-                f'<span class="er-zine-step-t">{esc(q["title"])}</span></a>')
+            return ''
+        if rel == 'prev':
+            return (f'<a href="/writing/{q["slug"]}/" rel="prev"><span class="er-pager-k">&larr; {num(q["no"])}</span>'
+                    f'<span class="er-pager-t">{esc(q["title"])}</span></a>')
+        return (f'<a href="/writing/{q["slug"]}/" rel="next"><span class="er-pager-k">{num(q["no"])} &rarr;</span>'
+                f'<span class="er-pager-t">{esc(q["title"])}</span></a>')
 
-    body = f'''<section class="er-section er-section--first er-zine-head" id="top">
+    body = f'''<section class="er-section er-section--light er-section--first er-zine-page" id="top">
 <div class="er-wrap er-wrap--read">
-<p class="er-zine-crumb"><a href="/writing/">The zine</a> <span aria-hidden="true">/</span> <a href="/writing/#{p['shelf']}">{shelf}</a></p>
-<p class="er-eyebrow">No. {p['no']} <span class="er-zine-of">/ {total}</span></p>
-<h1 class="er-h2 er-zine-title">{esc(p['title'])}</h1>
+<nav aria-label="Breadcrumb" class="er-zine-crumb"><a href="/writing/">the zine</a> <span aria-hidden="true">/</span> <a href="/writing/#{p['shelf']}">{shelf.lower()}</a></nav>
+<header class="er-specimen-card">
+<p class="er-label"><span>entry {num(p['no'])} <span class="er-zine-of">of {total + 1}</span></span><span>class: {shelf.lower()}</span></p>
+<h1 class="er-specimen-title">{esc(p['title'])}</h1>
 {dek}
-<p class="er-zine-meta"><span>{long_date(p['date'])}</span><span>{mins} min read</span><span>{p['words']:,} words</span></p>
-</div>
-</section>
-<section class="er-section er-section--light er-zine-page">
-<div class="er-wrap er-wrap--read">
+<p class="er-label"><span>observed {long_date(p['date']).lower()}</span><span>{mins} min &middot; {p['words']:,} words</span></p>
+</header>
 {prompt}
 <div class="er-prose">
 {p['html']}
 </div>
 {origin}
 {tags}
-<nav aria-label="More writing" class="er-zine-steps">{step(prev, 'prev')}{step(nxt, 'next')}</nav>
+<nav aria-label="More writing" class="er-pager">{step(prev, 'prev')}{step(nxt, 'next')}</nav>
+<aside class="er-sub-card">
+<p class="er-label"><span>get the next one</span></p>
+<p>New pieces go up here first. The weekly letter goes out on Substack.</p>
+<p class="er-sub-links"><a href="{SUBSTACK}" rel="noopener" target="_blank">subscribe on substack</a> <span aria-hidden="true">&middot;</span> <a href="/writing/feed.xml">rss</a> <span aria-hidden="true">&middot;</span> <a href="/writing/">every entry</a></p>
+</aside>
 </div>
-</section>
-{SUBSCRIBE}'''
-    desc = p.get('dek') or re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', p['html'])).strip()[:155]
-    return page(p['title'], desc, f'/writing/{p["slug"]}/', body, kind='article', script=PAUSE_SCRIPT)
+</section>'''
+    desc = excerpt(p) or p['title']
+    return page(p['title'], desc, f'/writing/{p["slug"]}/', body, kind='article', script=PAUSE_SCRIPT,
+                body_class='er-dark-hero')
 
 
 def row(e, total):
     """One line of the index, for a hosted piece or a linked one."""
     if e.get('shelf') == 'dispatches':
-        no, no_key = f'D{e["dispatch"]:02d}', 1000 + e['dispatch']
+        no, no_key = f'd. {e["dispatch"]:02d}', 1000 + e['dispatch']
     else:
-        no, no_key = f'No. {e["no"]}', e['no']
+        no, no_key = num(e['no']), e['no']
     hosted = 'slug' in e
     href = f'/writing/{e["slug"]}/' if hosted else e['url']
     attrs = '' if hosted else ' rel="noopener" target="_blank"'
@@ -370,10 +394,12 @@ def row(e, total):
     length = f'{minutes(words)} min' if words else ''
     where = '' if hosted else f'<span class="er-zine-away">{esc(e["origin"])} &#8599;</span>'
     year = e['date'][:4]
+    ex = excerpt(e) if hosted else ''
+    ex_html = f'<span class="er-zine-ex">{esc(ex)}</span>' if ex else ''
     return (f'<li class="er-zine-row" data-shelf="{e["shelf"]}" data-date="{e["date"]}" data-words="{words}" '
             f'data-no="{no_key}" data-year="{year}">'
             f'<span class="er-zine-no">{no}</span>'
-            f'<a class="er-zine-t" href="{esc(href)}"{attrs}>{esc(e["title"])}</a>'
+            f'<span class="er-zine-tt"><a class="er-zine-t" href="{esc(href)}"{attrs}>{esc(e["title"])}</a>{ex_html}</span>'
             f'<span class="er-zine-shelf">{SHELVES[e["shelf"]][0]}</span>'
             f'<span class="er-zine-when">{short_date(e["date"])}</span>'
             f'<span class="er-zine-len">{length}{where}</span></li>')
@@ -432,7 +458,7 @@ def index_page(pieces, elsewhere, desk):
     start = sorted([p for p in pieces if p.get('start_here')], key=lambda p: int(p['start_here']))
     cards = ''.join(
         f'''<a class="er-zine-card" href="/writing/{p['slug']}/">
-<span class="er-zine-card-k">No. {p['no']} &middot; {SHELVES[p['shelf']][0]}</span>
+<span class="er-zine-card-k">{num(p['no'])} &middot; {SHELVES[p['shelf']][0].lower()}</span>
 <span class="er-zine-card-t">{esc(p['title'])}</span>
 <span class="er-zine-card-m">{short_date(p['date'])} &middot; {minutes(p['words'])} min</span>
 </a>''' for p in start)
@@ -536,7 +562,7 @@ def homepage_strip(pieces):
         return
     latest = sorted(pieces, key=lambda p: (p['date'], p['no']), reverse=True)[:3]
     cards = ''.join(f'''<a class="er-zine-card" href="/writing/{p['slug']}/">
-<span class="er-zine-card-k">No. {p['no']} &middot; {SHELVES[p['shelf']][0]}</span>
+<span class="er-zine-card-k">{num(p['no'])} &middot; {SHELVES[p['shelf']][0].lower()}</span>
 <span class="er-zine-card-t">{esc(p['title'])}</span>
 <span class="er-zine-card-m">{short_date(p['date'])} &middot; {minutes(p['words'])} min</span>
 </a>''' for p in latest)

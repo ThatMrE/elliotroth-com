@@ -3,6 +3,7 @@ title: The title as it should appear
 date: 2026-12-01
 shelf: essays
 dek: Optional one-line standfirst under the title
+excerpt: Optional line for the index; by default it is the dek, the prompt, or the opening
 tags: optional, comma, separated
 draft: true
 ---
