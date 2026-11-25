@@ -3,8 +3,26 @@
 
 [[redirects]]
   from = "/stories"
-  to = "https://elliotroth.substack.com/"
+  to = "/writing/"
   status = 301
+  force = true
+
+[[redirects]]
+  from = "/writing"
+  to = "/writing/"
+  status = 301
+
+# the writing sources and the generator are repo-only
+[[redirects]]
+  from = "/writing/_src/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/scripts/*"
+  to = "/404.html"
+  status = 404
   force = true
 
 [[redirects]]
