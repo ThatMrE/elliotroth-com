@@ -3758,3 +3758,146 @@ html:not(.er-zine-live) .er-zine-showing { display: none; }
   .er-pager { flex-direction: column; }
   .er-pager a { max-width: none; }
 }
+
+/* =========================================================
+   MUSICAL LAYER — d3 + Web Audio, all in er-show.js.
+   Sound only follows the SOUND toggle; motion only follows
+   prefers-reduced-motion. Without scripts none of this exists.
+   ========================================================= */
+
+/* ---- the back catalog as a drum machine ---- */
+.er-seq { margin: 0 0 30px; }
+
+.er-seq-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+}
+
+.er-section .er-seq-key {
+  margin: 0;
+  max-width: 52ch;
+  font-family: var(--er-mono);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: var(--er-muted);
+}
+
+.er-seq-grid { width: 100%; }
+.er-seq-svg { display: block; overflow: visible; }
+
+.er-seq-year,
+.er-seq-cls {
+  font-family: var(--er-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  fill: rgba(255, 255, 255, 0.72);
+}
+
+.er-seq-cls { text-transform: uppercase; }
+
+.er-seq-cell rect {
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.er-seq-cell.is-lit rect { stroke: #0b0b0b; stroke-width: 2; stroke-dasharray: none; }
+.er-seq-cell.is-lit:hover rect { stroke: var(--er-acid); }
+
+.er-seq-n {
+  font-family: var(--er-mono);
+  font-size: 12px;
+  font-weight: 700;
+  fill: #0b0b0b;
+  pointer-events: none;
+}
+
+.er-seq-head { fill: rgba(242, 255, 61, 0.12); stroke: var(--er-acid); stroke-width: 1.5; }
+
+/* a card lights up as its project is played */
+.er-artifact { transition: box-shadow 0.12s ease, transform 0.12s ease; }
+.er-artifact--hit { box-shadow: 0 0 0 3px var(--er-acid), 6px 6px 0 var(--er-hot); transform: translateY(-3px); }
+
+/* ---- keys: the shapes a keystroke throws ---- */
+.er-keys-layer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9000;
+  overflow: visible;
+}
+
+/* ---- the headline as a xylophone ---- */
+.er-xylo-word { white-space: nowrap; }
+.er-xylo { display: inline-block; cursor: default; }
+.er-xylo--hop { animation: er-hop 0.42s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+
+@keyframes er-hop {
+  0% { transform: translateY(0) rotate(0); }
+  35% { transform: translateY(-0.16em) rotate(-4deg); }
+  100% { transform: translateY(0) rotate(0); }
+}
+
+/* ---- the zine as a waveform ---- */
+.er-wave { margin: 30px 0 6px; cursor: pointer; touch-action: pan-y; }
+html:not(.er-js) .er-wave { display: none; }
+.er-wave-svg { display: block; }
+.er-wave-axis { stroke: rgba(255, 255, 255, 0.18); stroke-dasharray: 2 4; }
+.er-wave-bar { fill: var(--er-acid); transition: fill 0.1s ease; }
+.er-wave-bar--away { fill: none; stroke: rgba(242, 255, 61, 0.55); stroke-width: 1.2; stroke-dasharray: 2 2; }
+.er-wave-bar.is-on { fill: var(--er-hot); stroke: var(--er-hot); stroke-dasharray: none; }
+
+.er-section .er-wave-label {
+  min-height: 1.5em;
+  margin: 10px 0 0;
+  font-family: var(--er-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .er-xylo--hop { animation: none; }
+  .er-artifact, .er-wave-bar { transition: none; }
+  .er-artifact--hit { transform: none; }
+}
+
+/* ---- the note that says what plays, once a visit ---- */
+.er-toast {
+  position: fixed;
+  right: 16px;
+  bottom: 64px;
+  z-index: 10001;
+  max-width: min(340px, calc(100vw - 32px));
+  margin: 0;
+  padding: 12px 14px;
+  background: #0b0b0b;
+  color: var(--er-paper);
+  border: 2px solid var(--er-acid);
+  box-shadow: 4px 4px 0 var(--er-hot);
+  font-family: var(--er-mono);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.er-toast--on { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .er-toast { transition: none; transform: none; }
+}
