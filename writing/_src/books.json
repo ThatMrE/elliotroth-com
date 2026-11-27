@@ -2,6 +2,7 @@
   {
     "key": "allograft",
     "title": "allograft",
+    "kind": "poems",
     "published": "2015-11",
     "line": "to my grandfathers\nwho taught me that scars\nare just stories waiting to be told",
     "buy": "https://www.amazon.com/dp/B0DKJMZRKZ",
@@ -10,9 +11,30 @@
   {
     "key": "litany",
     "title": "litany",
+    "kind": "poems",
     "published": "2024-12",
     "line": "to grow flowers there first has to be rain",
     "buy": "https://www.amazon.com/dp/B0DR64BC1K",
     "store": "Amazon"
+  },
+  {
+    "key": "the-endlings",
+    "title": "The Endlings",
+    "subtitle": "Aphrodite Awakes. Book one of a science fiction series.",
+    "kind": "novel",
+    "status": "being written now",
+    "line": "On Venus, the cities float, the doors breathe, and seeing the wrong thing gets you thrown over the side.",
+    "site": "https://the-endlings.netlify.app/",
+    "cta": "join the launch list"
+  },
+  {
+    "key": "bootstrapping-biotech",
+    "title": "Bootstrapping Biotech",
+    "subtitle": "Working title.",
+    "kind": "nonfiction",
+    "status": "outline done, drafting in 2027",
+    "line": "The 90-day biotech accelerator, in paper form. A week-by-week companion for scientists who want to build a company without waiting for permission or a $20M round.",
+    "site": "https://bootstrapping-biotech.netlify.app/",
+    "cta": "join the book list"
   }
 ]

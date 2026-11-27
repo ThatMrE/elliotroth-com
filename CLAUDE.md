@@ -73,6 +73,14 @@ build. Never hand-edit the generated files — edit the source and rebuild.
   call, numbered in book order (allograft No. 34–69, litany No. 70–112). The
   manuscripts stay out of the repo. Book facts (month, dedication, epigraph)
   come from the books' own front pages.
+- **Every book is a row in `books.json`**, poems or not. A book that is out
+  has `published` and `buy`; one still being written has `status`, `site` and
+  `cta` instead (and no `published`, so it stays off the mind map), plus an
+  optional `subtitle` and `line`. The generator draws the cards twice: in full
+  on `/writing/#books`, and without the contents lists on the homepage between
+  the `<!-- books:shelf -->` markers. A book's `line`, `status` and `subtitle`
+  come from that book's own public site; the two workspaces behind the
+  unfinished books are private and are never linked or described.
 - **A poem keeps the book's layout.** A run of two or more spaces inside a
   line is a gap that wide (tab stops, as in Ember and tomorrow); a stanza
   whose first line is `[right]` is set flush right; a line starting
