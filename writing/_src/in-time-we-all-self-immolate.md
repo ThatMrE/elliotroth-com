@@ -1,5 +1,5 @@
 ---
-no: 37
+no: 76
 title: in time we all self immolate
 date: 2024-12
 shelf: poetry

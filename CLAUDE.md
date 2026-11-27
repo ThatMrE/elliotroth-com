@@ -69,10 +69,18 @@ build. Never hand-edit the generated files — edit the source and rebuild.
 - **Poems** go on the `poetry` shelf: plain lines, a blank line ends a stanza,
   leading spaces are kept, and no Markdown is read inside one. `book: <key>`
   ties a poem to an entry in `writing/_src/books.json`, which also draws the
-  book cards on the index. The manuscripts stay out of the repo; only poems
-  Elliot has picked go up, and each book is kept under a tenth of its words
-  here until he says the ebook isn't exclusive to a store. Book facts (month,
-  dedication, epigraph) come from the books' own front pages.
+  book cards on the index. Both books are on the site in full, at Elliot's
+  call, numbered in book order (allograft No. 34–69, litany No. 70–112). The
+  manuscripts stay out of the repo. Book facts (month, dedication, epigraph)
+  come from the books' own front pages.
+- **A poem keeps the book's layout.** A run of two or more spaces inside a
+  line is a gap that wide (tab stops, as in Ember and tomorrow); a stanza
+  whose first line is `[right]` is set flush right; a line starting
+  `[spread] ` is spread across the measure at its gaps (both in Hindsight).
+  Lines the page width wrapped were rejoined; where a long line breaks before
+  a capital, a question mark or a new clause, the break is the poem's and
+  stays. A page turn is a stanza break only if another line would have fitted
+  on the page before it.
 - **The mind map** (`/mind/`) is built from what the site already lists: the
   numbered pieces, `books.json`, and the `.er-artifact` cards the generator
   reads out of `index.html`. Its links are shared years, shelves, books and

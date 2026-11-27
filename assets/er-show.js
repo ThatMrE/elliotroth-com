@@ -912,7 +912,6 @@
     more.appendChild(any);
     cut.appendChild(label);
     cut.appendChild(el('h3', 'er-book-t', 'Poem randomizer'));
-    cut.appendChild(el('p', 'er-cut-note', 'Lines pulled at random from the poems here. I wrote every line. The order is the machine\u2019s.'));
     cut.appendChild(bar);
     cut.appendChild(body);
     cut.appendChild(src);
@@ -977,7 +976,7 @@
     var pitch = d3.scaleQuantize().domain([Math.sqrt(maxW), 0]).range(d3.range(3, 18));
     function hub(n) { return n.k === 'year' || n.k === 'shelf' || n.k === 'class'; }
     function size(n) {
-      if (n.k === 'piece') return n.here ? 4.5 + Math.sqrt(n.w) / 8 : 4;
+      if (n.k === 'piece') return n.book ? 3 : n.here ? 4.5 + Math.sqrt(n.w) / 8 : 4;
       return n.k === 'build' ? 8 : n.k === 'book' ? 10 : n.k === 'year' ? 5 : 4;
     }
 
@@ -1043,7 +1042,8 @@
       var pull = function (b) { return b.n.k === 'year' ? 1 : (b.n.k === 'shelf' || b.n.k === 'class') ? 0 : 0.12; };
       if (sim) sim.stop();
       sim = d3.forceSimulation(bodies)
-        .force('link', d3.forceLink(springs).distance(tall ? 38 : 48).strength(0.3))
+        .force('link', d3.forceLink(springs).distance(function (l) { return l.source.n.k === 'piece' && l.target.n.k === 'book' ? (tall ? 14 : 18) : (tall ? 38 : 48); })
+          .strength(function (l) { return l.target.n.k === 'book' ? 0.9 : 0.3; }))
         .force('charge', d3.forceManyBody().strength(tall ? -85 : -150))
         .force('collide', d3.forceCollide(function (b) { return size(b.n) + 5; }))
         .force('time', (tall ? d3.forceY(t) : d3.forceX(t)).strength(pull))
@@ -1052,7 +1052,7 @@
       if (!show.motion) { sim.stop(); for (var i = 0; i < 320; i++) sim.tick(); sync(); } /* settle out of sight */
     }
 
-    var sel = null, walking = 0, hereNode = null, seen = [], steps = 0;
+    var sel = null, walking = 0, hereNode = null, seen = [], steps = 0, ends = 0;
     function sing(n) {
       if (n.k === 'piece') {
         synth.tone(synth.freq(n.here ? pitch(Math.sqrt(n.w)) : 17), { wave: n.here ? 'triangle' : 'sine', dur: 0.3, vel: n.here ? 0.34 : 0.14 });
@@ -1103,8 +1103,16 @@
     function step() {
       var fresh = hereNode.near.filter(function (m) { return seen.indexOf(m) < 0; });
       var from = fresh.length ? fresh : hereNode.near;
+      /* a book is a fan of poems, each a dead end: after two of them, the thought moves on */
+      if (ends >= 2) {
+        var onward = from.filter(function (m) { return m.near.length > 1; });
+        if (!onward.length) onward = hereNode.near.filter(function (m) { return m.near.length > 1; });
+        if (onward.length) from = onward;
+      }
       if (!from.length || steps >= 40) { stop(); return; }
       hereNode = from[Math.floor(Math.random() * from.length)];
+      if (hereNode.near.length === 1) ends++; else if (!hub(hereNode) && hereNode.k !== 'book') ends = 0;
+      if (hub(hereNode)) ends = 0;
       seen.push(hereNode); steps++;
       sel = null; select(hereNode);
       walking = setTimeout(step, hub(hereNode) ? 320 : 560);
@@ -1116,7 +1124,7 @@
       if (show.sound) synth.ctx();
       var leaves = nodes.filter(function (n) { return !hub(n); });
       hereNode = sel && !hub(sel) ? sel : leaves[Math.floor(Math.random() * leaves.length)];
-      seen = [hereNode]; steps = 0;
+      seen = [hereNode]; steps = 0; ends = 0;
       sel = null; select(hereNode);
       walking = setTimeout(step, 560);
     });

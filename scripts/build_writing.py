@@ -107,7 +107,7 @@ def load():
                 p['book'] = by_key[p['book']]
         else:
             p['html'] = render(p['body'], p['slug'])
-        p['words'] = count_words(p['body'])
+        p['words'] = count_words(' '.join(p['verse'])) if p['shelf'] == 'poetry' else count_words(p['body'])
     nos = [p['no'] for p in pieces] + [e['no'] for e in elsewhere if 'no' in e]
     dupes = sorted({n for n in nos if nos.count(n) > 1})
     if dupes:
@@ -231,16 +231,35 @@ def render(md, slug=''):
 
 
 def render_poem(text):
-    """Verse: a blank line ends a stanza, every other line break is kept, and
-    leading spaces are kept as indentation. Returns (html, the lines)."""
+    """Verse, set the way the book sets it. A blank line ends a stanza; every other
+    line break is kept. Leading spaces indent a line. Inside a line, a run of two or
+    more spaces is a gap as wide as those spaces (a tab stop on the page). A stanza
+    whose first line is [right] is set flush right, and a line that starts with
+    [spread] is spread across the whole measure at its gaps.
+    Returns (html, the lines as plain text, gaps closed up)."""
     stanzas, verse = [], []
     for block in re.split(r'\n[ \t]*\n', text.strip('\n')):
         lines = [l.rstrip().expandtabs(4) for l in block.split('\n') if l.strip()]
+        right = bool(lines) and lines[0].strip() == '[right]'
+        lines = lines[1:] if right else lines
         if not lines:
             continue
-        verse += lines
-        stanzas.append('<p class="er-stanza">'
-                       + '<br/>\n'.join(f'<span class="er-line">{esc(l)}</span>' for l in lines) + '</p>')
+        out = []
+        for l in lines:
+            if l.startswith('[spread] '):
+                parts = [p for p in re.split(r'\s{2,}', l[len('[spread] '):].strip()) if p]
+                out.append('<span class="er-line er-line--spread">'
+                           + ' '.join(f'<span>{esc(p)}</span>' for p in parts) + '</span>')
+                verse.append(' '.join(parts))
+                continue
+            lead = len(l) - len(l.lstrip(' '))
+            body = re.sub(r' {2,}', lambda m: f'\x00{len(m.group(0))}\x00', l.strip())
+            body = re.sub(r'\x00(\d+)\x00', lambda m: f'<span class="er-gap" style="width:{int(m.group(1)) * 0.27:.2f}em"> </span>',
+                          esc(body))
+            out.append(f'<span class="er-line">{" " * lead}{body}</span>')
+            verse.append(re.sub(r'\s+', ' ', l.strip()))
+        cls = 'er-stanza er-stanza--right' if right else 'er-stanza'
+        stanzas.append(f'<p class="{cls}">' + '<br/>\n'.join(out) + '</p>')
     return '<div class="er-poem">\n' + '\n'.join(stanzas) + '\n</div>', verse
 
 
@@ -284,8 +303,7 @@ def excerpt(p, limit=150):
     if p.get('prompt'):
         return 'Prompt: ' + p['prompt']
     if p.get('shelf') == 'poetry':  # a poem is quoted by its first two lines
-        first = [html.unescape(l).strip() for l in re.findall(r'<span class="er-line">(.*?)</span>', p['html'])[:2]]
-        return ' / '.join(first)
+        return ' / '.join(p['verse'][:2])
     for para in re.findall(r'<p>(.*?)</p>', p['html'], re.S):
         text = html.unescape(re.sub(r'<[^>]+>', '', para)).strip()
         if len(text) > 40:
@@ -500,8 +518,9 @@ def books_section(books, pieces):
         poems = ''
         if here:
             links = ''.join(f'<li><a href="/writing/{p["slug"]}/">{esc(p["title"])}</a></li>' for p in here)
-            poems = (f'<p class="er-label"><span>{len(here)} {"poem" if len(here) == 1 else "poems"} from it, here</span></p>'
-                     f'<ul class="er-book-poems">{links}</ul>')
+            poems = (f'<p class="er-label"><span>{len(here)} {"poem" if len(here) == 1 else "poems"}, all here</span>'
+                     f'<span><a href="/writing/{here[0]["slug"]}/">start at the first &rarr;</a></span></p>'
+                     f'<details class="er-book-toc"><summary>Contents</summary><ol class="er-book-poems">{links}</ol></details>')
         line = (f'<p class="er-book-line">{"<br/>".join(esc(l) for l in b["line"].split(chr(10)))}</p>'
                 if b.get('line') else '')
         buy = (f'<p class="er-sub-links"><a href="{esc(b["buy"])}" rel="noopener" target="_blank">get the book on '
@@ -514,7 +533,7 @@ def books_section(books, pieces):
 {buy}
 </article>''')
     # the poem randomizer: er-show.js deals a cut-up from these lines (see "the cut-up" there)
-    verse = [{'no': p['no'], 't': p['title'], 'u': f'/writing/{p["slug"]}/', 'lines': [l.strip() for l in p['verse']]}
+    verse = [{'no': p['no'], 't': p['title'], 'u': f'/writing/{p["slug"]}/', 'lines': p['verse']}
              for p in sorted(pieces, key=lambda p: p['no']) if p['shelf'] == 'poetry']
     if len(verse) > 1:
         data = json.dumps(verse, ensure_ascii=False).replace('</', '<\\/')
@@ -655,7 +674,7 @@ def mind_page(pieces, elsewhere, books):
             shelves_used.append(e['shelf'])
         year(y)
         years[y]['pieces'].append(e)
-        nodes.append({'id': nid, 'k': 'piece', 't': e['title'], 'no': e['no'], 'y': y,
+        nodes.append({'id': nid, 'k': 'piece', 't': e['title'], 'no': e['no'], 'y': y, 'book': bool(book),
                       'u': f'/writing/{e["slug"]}/' if hosted else e['url'], 'x': not hosted,
                       'here': hosted, 'w': e.get('words') or 0, 's': SHELVES[e['shelf']][0].lower()})
     for i, a in enumerate(built):
@@ -698,7 +717,6 @@ def mind_page(pieces, elsewhere, books):
 <div class="er-wrap">
 <p class="er-eyebrow">The mind map</p>
 <h1 class="er-h2">How it connects.</h1>
-<p class="er-lede">Everything I&rsquo;ve written and everything in the back catalog, wired together by year and by kind. Drag a dot. Press play and the map follows a train of thought, a different one every time.</p>
 <p class="er-zine-count"><span><b>{len(numbered)}</b> pieces</span><span><b>{len(built)}</b> builds</span><span><b>{len(books)}</b> books</span><span><b>{len(years)}</b> years</span></p>
 <div class="er-map"></div>
 <script id="er-map-data" type="application/json">{data}</script>

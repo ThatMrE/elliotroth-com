@@ -3924,6 +3924,11 @@ html:not(.er-js) .er-wave { display: none; }
   transition: background-color 0.12s ease, color 0.12s ease;
 }
 
+/* the book's own layout: flush-right stanzas, lines spread across the measure, tab-stop gaps */
+.er-section .er-poem .er-stanza--right .er-line { margin-left: auto; margin-right: -0.3em; padding: 0 0.3em; text-indent: 0; text-align: right; }
+.er-section .er-poem .er-line--spread { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 1.5em; width: auto; }
+.er-section .er-poem .er-gap { display: inline-block; max-width: 40%; } /* beats the theme's span { display: inline } */
+
 /* the line being sung */
 .er-section .er-poem .er-line--on { background: #14100a; color: var(--er-acid); }
 
@@ -3950,6 +3955,7 @@ html:not(.er-js) .er-wave { display: none; }
   display: grid;
   gap: 18px;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  align-items: start; /* an open contents list doesn't stretch its neighbour */
   margin-top: 26px;
 }
 
@@ -3987,17 +3993,26 @@ html:not(.er-js) .er-wave { display: none; }
 .er-book .er-label { padding-top: 10px; border-top: 1px dashed rgba(20, 16, 10, 0.25); }
 .er-book .er-label:first-child { padding-top: 0; border-top: 0; }
 
-.er-book-poems {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
+.er-book-toc summary {
+  cursor: pointer;
+  font-family: var(--er-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: #14100a;
 }
 
-.er-section .er-book-poems li { font-family: var(--er-mono); font-size: 0.8rem; line-height: 1.5; }
-.er-book-poems a { color: #8a0038; }
+.er-book-poems {
+  margin: 10px 0 0;
+  padding-left: 2.2em;
+  columns: 2 13rem;
+  column-gap: 20px;
+}
+
+.er-section .er-book-poems li { font-family: var(--er-mono); font-size: 0.8rem; line-height: 1.6; break-inside: avoid; color: rgba(20, 16, 10, 0.68); }
+.er-book-poems a,
+.er-section .er-book .er-label a { color: #8a0038; }
 .er-section .er-book .er-sub-links { margin: auto 0 0; padding-top: 4px; }
 
 /* ---- the poem randomizer: a third card, dealt by er-show.js ---- */
@@ -4008,7 +4023,6 @@ html:not(.er-js) .er-cut { display: none; }
 /* the card is paper inside a dark band: the verse is ink, not the band's white */
 .er-section .er-cut .er-stanza { color: #14100a; }
 
-.er-section .er-cut-note { margin: 0; max-width: 52ch; font-size: 1rem; line-height: 1.5; color: rgba(20, 16, 10, 0.82); }
 
 /* every dealt line carries the number of the poem it came from */
 .er-section .er-poem--cut .er-line::after {
