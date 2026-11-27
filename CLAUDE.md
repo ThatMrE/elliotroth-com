@@ -52,8 +52,8 @@ Elliot asks for them by name.
 The one part of the site that is generated. Sources live in `writing/_src/`;
 `python3 scripts/build_writing.py` (stdlib only, run from the repo root) turns
 them into `writing/index.html`, `writing/<slug>/index.html`, `writing/feed.xml`,
-the `/writing/` entries in `sitemap.xml`, and the homepage strip between the
-`<!-- writing:latest -->` markers. The output is committed; Netlify runs no
+the `/writing/` entries in `sitemap.xml`, the homepage strip between the
+`<!-- writing:latest -->` markers, and the mind map at `mind/index.html`. The output is committed; Netlify runs no
 build. Never hand-edit the generated files — edit the source and rebuild.
 
 - **A new piece:** copy `writing/_src/_template.md`, follow the notes in it,
@@ -66,6 +66,27 @@ build. Never hand-edit the generated files — edit the source and rebuild.
   out. Medium titles marked `title_from_link` were rebuilt from the post URL
   and may have the wrong capitalisation; when a Medium export arrives, move
   each into its own `.md` (keeping its number) and drop its JSON entry.
+- **Poems** go on the `poetry` shelf: plain lines, a blank line ends a stanza,
+  leading spaces are kept, and no Markdown is read inside one. `book: <key>`
+  ties a poem to an entry in `writing/_src/books.json`, which also draws the
+  book cards on the index. Both books are on the site in full, at Elliot's
+  call, numbered in book order (allograft No. 34–69, litany No. 70–112). The
+  manuscripts stay out of the repo. Book facts (month, dedication, epigraph)
+  come from the books' own front pages.
+- **A poem keeps the book's layout.** A run of two or more spaces inside a
+  line is a gap that wide (tab stops, as in Ember and tomorrow); a stanza
+  whose first line is `[right]` is set flush right; a line starting
+  `[spread] ` is spread across the measure at its gaps (both in Hindsight).
+  Lines the page width wrapped were rejoined; where a long line breaks before
+  a capital, a question mark or a new clause, the break is the poem's and
+  stays. A page turn is a stanza break only if another line would have fitted
+  on the page before it.
+- **The mind map** (`/mind/`) is built from what the site already lists: the
+  numbered pieces, `books.json`, and the `.er-artifact` cards the generator
+  reads out of `index.html`. Its links are shared years, shelves, books and
+  classes, nothing else. Change a card on the homepage and rebuild; never add
+  a node by hand. The year-by-year list under the graph is the same data and
+  is the whole page when scripts are off.
 - **Work in progress** (Sanderson-style progress bars): create
   `writing/_src/desk.json` as `[{"title": "…", "percent": 40, "note": "…"}]`.
   No file, no section. Only Elliot's real numbers go in it.
@@ -75,8 +96,8 @@ build. Never hand-edit the generated files — edit the source and rebuild.
 
 ## The show and the musical layer (`assets/er-show.js`)
 
-Progressive enhancement on the homepage, `/contact/` and `/writing/`; every
-page is complete without it. d3 is the one library, vendored as
+Progressive enhancement on the homepage, `/contact/`, `/writing/`, `/mind/` and
+the poem pages; every page is complete without it. d3 is the one library, vendored as
 `assets/vendor/d3-7.9.0.min.js` (licence beside it) and loaded `defer` before
 the show script — never from a CDN, never a newer build without reason.
 
@@ -86,7 +107,17 @@ the show script — never from a CDN, never a newer build without reason.
   pentatonic scale, so instruments always agree.
 - **Instruments play the site's own data**: the back-catalog drum machine
   reads the `.er-artifact` cards, the zine waveform reads the generator's
-  word counts. Don't feed them invented numbers.
+  word counts, and a poem page is its own score (each line a bar, each
+  syllable a note, the five vowels the five notes of the scale). Don't feed
+  them invented numbers.
+- **The poem randomizer** on `/writing/` deals a cut-up from the lines of the
+  poems already on the site (the generator prints them into `#er-poem-data`).
+  Every line carries its poem's number and the card says a machine dealt it.
+  It only reorders Elliot's lines: it never writes one, and a cut-up is never
+  presented as a poem of his.
+- **The conductor** on `/mind/` ("Follow a train of thought") walks the graph
+  from node to neighbour, a different route each time, and carries on from
+  wherever the visitor points. It starts only on a press, never by itself.
 - **Sound follows the toggle; motion follows `prefers-reduced-motion`.** Under
   reduced motion, notes still play but nothing hops, flies or sweeps.
 - The keyboard toy ignores keys with modifiers, held keys, and anything typed
@@ -100,7 +131,7 @@ There is no test suite. Serve locally and check the rendered result:
 python3 -m http.server 8899
 ```
 
-Then, across `/index.html`, `/portfolio/`, `/portfolio/websites/`,
+Then, across `/index.html`, `/mind/`, `/portfolio/`, `/portfolio/websites/`,
 `/contact/`, `/404.html`, `/writing/` and every `/writing/<slug>/`:
 
 - no horizontal page scroll at 1280, 768, 390 and 360

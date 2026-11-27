@@ -11,6 +11,7 @@ writing/_src/. It reads
                                  posts and the Substack dispatches
     writing/_src/desk.json       optional: works in progress, shown as
                                  progress bars (see CLAUDE.md)
+    writing/_src/books.json      optional: the books a poem can belong to
 
 and writes plain HTML that is committed like every other page:
 
@@ -19,6 +20,8 @@ and writes plain HTML that is committed like every other page:
     writing/feed.xml             RSS, full text
     sitemap.xml                  its /writing/ entries are replaced
     index.html                   the strip between the writing:latest markers
+    mind/index.html              the mind map: the writing and the homepage's
+                                 back catalog as one graph, and as a list
 
 Standard library only. No build step runs on Netlify; the output is the site.
 """
@@ -40,6 +43,7 @@ WPM = 230
 SHELVES = {  # key: (label, one line for the index)
     'essays': ('Essays', 'Arguments, mostly with myself.'),
     'fiction': ('Fiction', 'Short stories, usually from a one-line prompt.'),
+    'poetry': ('Poetry', 'Poems from the books. Press play and the vowels pick the notes.'),
     'field-notes': ('Field notes', 'Experiments, builds and the occasional useful list.'),
     'personal': ('Personal', 'Things that happened to me.'),
     'archive': ('Medium archive', 'Older pieces, still on Medium.'),
@@ -76,6 +80,9 @@ def load():
               if f.endswith('.md') and not f.startswith('_')]  # _template.md and friends are skipped
     pieces = [p for p in pieces if p.get('draft', '').lower() not in ('true', 'yes', '1')]
     elsewhere = json.load(open(os.path.join(SRC, 'elsewhere.json'), encoding='utf-8'))
+    books_path = os.path.join(SRC, 'books.json')
+    books = json.load(open(books_path, encoding='utf-8')) if os.path.exists(books_path) else []
+    by_key = {b['key']: b for b in books}
     taken = {int(p['no']) for p in pieces if p.get('no')} | {e['no'] for e in elsewhere if 'no' in e}
     for p in pieces:  # a new piece without a number gets the next one, written back to its file
         if not p.get('no'):
@@ -89,10 +96,18 @@ def load():
             if not p.get(k):
                 fail(f'{p["path"]}: missing "{k}" in front matter')
         if p['shelf'] not in SHELVES or p['shelf'] in ('archive', 'dispatches'):
-            fail(f'{p["path"]}: shelf must be one of essays, fiction, field-notes, personal')
+            fail(f'{p["path"]}: shelf must be one of essays, fiction, poetry, field-notes, personal')
         p['no'] = int(p['no'])
-        p['html'] = render(p['body'], p['slug'])
-        p['words'] = count_words(p['body'])
+        if p['shelf'] == 'poetry':  # verse keeps its line breaks; no markdown is read inside it
+            p['html'], p['verse'] = render_poem(p['body'])
+            p['lines'] = len(p['verse'])
+            if p.get('book'):
+                if p['book'] not in by_key:
+                    fail(f'{p["path"]}: book "{p["book"]}" is not a key in writing/_src/books.json')
+                p['book'] = by_key[p['book']]
+        else:
+            p['html'] = render(p['body'], p['slug'])
+        p['words'] = count_words(' '.join(p['verse'])) if p['shelf'] == 'poetry' else count_words(p['body'])
     nos = [p['no'] for p in pieces] + [e['no'] for e in elsewhere if 'no' in e]
     dupes = sorted({n for n in nos if nos.count(n) > 1})
     if dupes:
@@ -102,7 +117,7 @@ def load():
         fail('two pieces share a slug')
     desk_path = os.path.join(SRC, 'desk.json')
     desk = json.load(open(desk_path, encoding='utf-8')) if os.path.exists(desk_path) else []
-    return pieces, elsewhere, desk
+    return pieces, elsewhere, desk, books
 
 
 # ----------------------------------------------------------------- markdown
@@ -215,6 +230,39 @@ def render(md, slug=''):
     return '\n'.join(out)
 
 
+def render_poem(text):
+    """Verse, set the way the book sets it. A blank line ends a stanza; every other
+    line break is kept. Leading spaces indent a line. Inside a line, a run of two or
+    more spaces is a gap as wide as those spaces (a tab stop on the page). A stanza
+    whose first line is [right] is set flush right, and a line that starts with
+    [spread] is spread across the whole measure at its gaps.
+    Returns (html, the lines as plain text, gaps closed up)."""
+    stanzas, verse = [], []
+    for block in re.split(r'\n[ \t]*\n', text.strip('\n')):
+        lines = [l.rstrip().expandtabs(4) for l in block.split('\n') if l.strip()]
+        right = bool(lines) and lines[0].strip() == '[right]'
+        lines = lines[1:] if right else lines
+        if not lines:
+            continue
+        out = []
+        for l in lines:
+            if l.startswith('[spread] '):
+                parts = [p for p in re.split(r'\s{2,}', l[len('[spread] '):].strip()) if p]
+                out.append('<span class="er-line er-line--spread">'
+                           + ' '.join(f'<span>{esc(p)}</span>' for p in parts) + '</span>')
+                verse.append(' '.join(parts))
+                continue
+            lead = len(l) - len(l.lstrip(' '))
+            body = re.sub(r' {2,}', lambda m: f'\x00{len(m.group(0))}\x00', l.strip())
+            body = re.sub(r'\x00(\d+)\x00', lambda m: f'<span class="er-gap" style="width:{int(m.group(1)) * 0.27:.2f}em"> </span>',
+                          esc(body))
+            out.append(f'<span class="er-line">{" " * lead}{body}</span>')
+            verse.append(re.sub(r'\s+', ' ', l.strip()))
+        cls = 'er-stanza er-stanza--right' if right else 'er-stanza'
+        stanzas.append(f'<p class="{cls}">' + '<br/>\n'.join(out) + '</p>')
+    return '<div class="er-poem">\n' + '\n'.join(stanzas) + '\n</div>', verse
+
+
 def count_words(md):
     t = re.sub(r'!\[[^\]]*\]\([^)]*\)|\[Video\]\([^)]*\)', ' ', md)
     t = re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', t)
@@ -254,6 +302,8 @@ def excerpt(p, limit=150):
         return p['dek']
     if p.get('prompt'):
         return 'Prompt: ' + p['prompt']
+    if p.get('shelf') == 'poetry':  # a poem is quoted by its first two lines
+        return ' / '.join(p['verse'][:2])
     for para in re.findall(r'<p>(.*?)</p>', p['html'], re.S):
         text = html.unescape(re.sub(r'<[^>]+>', '', para)).strip()
         if len(text) > 40:
@@ -336,8 +386,17 @@ def piece_page(p, total, prev, nxt):
     dek = f'<p class="er-specimen-dek">{inline(p["dek"])}</p>' if p.get('dek') else ''
     prompt = (f'<aside class="er-prompt"><span class="er-prompt-k">Prompt</span>'
               f'<p>{inline(p["prompt"])}</p></aside>') if p.get('prompt') else ''
+    poem = p['shelf'] == 'poetry'
+    length = (f'{p["lines"]} lines &middot; {p["words"]:,} words' if poem
+              else f'{mins} min &middot; {p["words"]:,} words')
     origin = ''
-    if p.get('origin_url'):
+    if poem and isinstance(p.get('book'), dict):
+        b = p['book']
+        buy = (f' <a href="{esc(b["buy"])}" rel="noopener" target="_blank">The whole book is on {esc(b.get("store", "sale"))}</a>.'
+               if b.get('buy') else '')
+        origin = (f'<aside class="er-origin">From <a href="/writing/#books">{esc(b["title"])}</a>, '
+                  f'a book of poems, {long_date(b["published"])}.{buy}</aside>')
+    elif p.get('origin_url'):
         origin = (f'<aside class="er-origin">First published on <a href="{esc(p["origin_url"])}" rel="noopener" '
                   f'target="_blank">{esc(p.get("origin", "the web"))}</a>, {long_date(p["date"])}.</aside>')
     tags = ''
@@ -361,10 +420,10 @@ def piece_page(p, total, prev, nxt):
 <p class="er-label"><span>entry {num(p['no'])} <span class="er-zine-of">of {total + 1}</span></span><span>class: {shelf.lower()}</span></p>
 <h1 class="er-specimen-title">{esc(p['title'])}</h1>
 {dek}
-<p class="er-label"><span>observed {long_date(p['date']).lower()}</span><span>{mins} min &middot; {p['words']:,} words</span></p>
+<p class="er-label"><span>observed {long_date(p['date']).lower()}</span><span>{length}</span></p>
 </header>
 {prompt}
-<div class="er-prose">
+<div class="er-prose{' er-prose--poem' if poem else ''}">
 {p['html']}
 </div>
 {origin}
@@ -379,7 +438,7 @@ def piece_page(p, total, prev, nxt):
 </section>'''
     desc = excerpt(p) or p['title']
     return page(p['title'], desc, f'/writing/{p["slug"]}/', body, kind='article', script=PAUSE_SCRIPT,
-                body_class='er-dark-hero')
+                body_class='er-dark-hero', scripts=('/assets/er-show.js',) if poem else ())
 
 
 def row(e, total):
@@ -450,7 +509,47 @@ def desk_section(desk):
 </section>'''
 
 
-def index_page(pieces, elsewhere, desk):
+def books_section(books, pieces):
+    if not books:
+        return ''
+    cards = []
+    for b in books:
+        here = sorted([p for p in pieces if p.get('book') is b], key=lambda p: p['no'])
+        poems = ''
+        if here:
+            links = ''.join(f'<li><a href="/writing/{p["slug"]}/">{esc(p["title"])}</a></li>' for p in here)
+            poems = (f'<p class="er-label"><span>{len(here)} {"poem" if len(here) == 1 else "poems"}, all here</span>'
+                     f'<span><a href="/writing/{here[0]["slug"]}/">start at the first &rarr;</a></span></p>'
+                     f'<details class="er-book-toc"><summary>Contents</summary><ol class="er-book-poems">{links}</ol></details>')
+        line = (f'<p class="er-book-line">{"<br/>".join(esc(l) for l in b["line"].split(chr(10)))}</p>'
+                if b.get('line') else '')
+        buy = (f'<p class="er-sub-links"><a href="{esc(b["buy"])}" rel="noopener" target="_blank">get the book on '
+               f'{esc(b.get("store", "sale").lower())} &#8599;</a></p>') if b.get('buy') else ''
+        cards.append(f'''<article class="er-book">
+<p class="er-label"><span>poems</span><span>{long_date(b['published']).lower()}</span></p>
+<h3 class="er-book-t">{esc(b['title'])}</h3>
+{line}
+{poems}
+{buy}
+</article>''')
+    # the poem randomizer: er-show.js deals a cut-up from these lines (see "the cut-up" there)
+    verse = [{'no': p['no'], 't': p['title'], 'u': f'/writing/{p["slug"]}/', 'lines': p['verse']}
+             for p in sorted(pieces, key=lambda p: p['no']) if p['shelf'] == 'poetry']
+    if len(verse) > 1:
+        data = json.dumps(verse, ensure_ascii=False).replace('</', '<\\/')
+        cards.append(f'<article class="er-book er-cut" id="randomizer"></article>\n'
+                     f'<script id="er-poem-data" type="application/json">{data}</script>')
+    count = {1: 'One book', 2: 'Two books', 3: 'Three books'}.get(len(books), f'{len(books)} books')
+    return f'''<section class="er-section er-section--tint" id="books">
+<div class="er-wrap">
+<p class="er-eyebrow">The books</p>
+<h2 class="er-h2">{count} of poems.</h2>
+<div class="er-books">{''.join(cards)}</div>
+</div>
+</section>'''
+
+
+def index_page(pieces, elsewhere, desk, books=()):
     entries = [dict(p) for p in pieces] + elsewhere
     numbered = [e for e in entries if e.get('shelf') != 'dispatches']
     dispatches = [e for e in entries if e.get('shelf') == 'dispatches']
@@ -495,14 +594,16 @@ def index_page(pieces, elsewhere, desk):
 <div class="er-wrap">
 <p class="er-eyebrow">The zine</p>
 <h1 class="er-h2">Things I wrote down.</h1>
-<p class="er-lede">Essays, short fiction, field notes from experiments run on myself, and the odd confession. Every piece has a number, oldest first. The newer ones live here in full; the older ones are still on Medium, and the weekly letter is on Substack.</p>
+<p class="er-lede">Essays, short fiction, poems, field notes from experiments run on myself, and the odd confession. Every piece has a number, oldest first. The newer ones live here in full; the older ones are still on Medium, and the weekly letter is on Substack.</p>
 <div aria-hidden="true" class="er-wave"></div>
 <script id="er-zine-data" type="application/json">{wave_json}</script>
 <p class="er-zine-count"><span><b>{len(numbered)}</b> pieces</span><span><b>{len(pieces)}</b> on this site</span><span><b>{words_here:,}</b> words here</span><span><b>{len(dispatches)}</b> dispatches</span></p>
+<div class="er-actions"><a class="er-btn er-btn--ghost" href="/mind/">See it as a map</a></div>
 </div>
 </section>
 {desk_section(desk)}
 {start_html}
+{books_section(books, pieces)}
 <section class="er-section er-section--light" id="index">
 <div class="er-wrap">
 <p class="er-eyebrow">The index</p>
@@ -517,9 +618,122 @@ def index_page(pieces, elsewhere, desk):
 </div>
 </section>
 {SUBSCRIBE}'''
-    desc = 'Essays, short fiction, field notes and personal pieces by Elliot Roth, numbered oldest first.'
+    desc = 'Essays, short fiction, poems, field notes and personal pieces by Elliot Roth, numbered oldest first.'
     return page('Writing', desc, '/writing/', body, script=INDEX_SCRIPT,
                 scripts=('/assets/vendor/d3-7.9.0.min.js', '/assets/er-show.js'))
+
+
+def catalog():
+    """The back catalog as the homepage states it: one dict per .er-artifact card."""
+    text = open(os.path.join(ROOT, 'index.html'), encoding='utf-8').read()
+    out = []
+    for m in re.finditer(r'<div class="er-artifact" data-class="([a-z]+)">(.*?)</div>', text, re.S):
+        meta = re.findall(r'<span>(.*?)</span>', m.group(2))
+        title = re.search(r'<h3>(.*?)</h3>', m.group(2), re.S)
+        link = re.search(r'<a href="([^"]+)"', m.group(2))
+        if title and meta and re.fullmatch(r'\d{4}', meta[0].strip()):
+            out.append({'year': meta[0].strip(), 'cls': m.group(1),
+                        'title': html.unescape(re.sub(r'<[^>]+>', '', title.group(1))).strip(),
+                        'url': html.unescape(link.group(1)) if link else ''})
+    return out
+
+
+def mind_page(pieces, elsewhere, books):
+    """The mind map. Nothing here is new information: every node is a piece from the
+    index, a book from books.json or a card from the homepage's back catalog, and
+    every link is a shared year, shelf, book or class. er-show.js draws the graph
+    from the JSON; the list under it is the same thing for readers without scripts."""
+    built = catalog()
+    numbered = sorted([dict(p) for p in pieces] + [e for e in elsewhere if e.get('shelf') != 'dispatches'],
+                      key=lambda e: e['no'])
+    nodes, links, years = [], [], {}
+
+    def year(y):
+        if y not in years:
+            years[y] = {'pieces': [], 'built': [], 'books': []}
+        return 'y' + y
+
+    shelves_used, classes_used = [], []
+    for b in books:
+        y = b['published'][:4]
+        links.append(['k:' + b['key'], year(y)])
+        links.append(['k:' + b['key'], 's:poetry'])
+        years[y]['books'].append(b)
+        nodes.append({'id': 'k:' + b['key'], 'k': 'book', 't': b['title'], 'u': b.get('buy', ''), 'x': True,
+                      'y': y, 's': 'book of poems, ' + long_date(b['published'])})
+    for e in numbered:
+        y, hosted = e['date'][:4], 'slug' in e
+        nid = f'p{e["no"]}'
+        book = e.get('book') if isinstance(e.get('book'), dict) else None
+        if book:
+            links.append([nid, 'k:' + book['key']])
+        else:
+            links.append([nid, year(y)])
+            links.append([nid, 's:' + e['shelf']])
+        if e['shelf'] not in shelves_used:
+            shelves_used.append(e['shelf'])
+        year(y)
+        years[y]['pieces'].append(e)
+        nodes.append({'id': nid, 'k': 'piece', 't': e['title'], 'no': e['no'], 'y': y, 'book': bool(book),
+                      'u': f'/writing/{e["slug"]}/' if hosted else e['url'], 'x': not hosted,
+                      'here': hosted, 'w': e.get('words') or 0, 's': SHELVES[e['shelf']][0].lower()})
+    for i, a in enumerate(built):
+        links.append([f'b{i}', year(a['year'])])
+        links.append([f'b{i}', 'c:' + a['cls']])
+        if a['cls'] not in classes_used:
+            classes_used.append(a['cls'])
+        years[a['year']]['built'].append(a)
+        nodes.append({'id': f'b{i}', 'k': 'build', 't': a['title'], 'u': a['url'], 'x': True, 'y': a['year'],
+                      's': a['cls'], 'c': a['cls']})
+    if books and 'poetry' not in shelves_used:
+        shelves_used.append('poetry')
+    for k in SHELVES:
+        if k in shelves_used:
+            nodes.append({'id': 's:' + k, 'k': 'shelf', 't': SHELVES[k][0], 's': 'a shelf in the zine'})
+    for c in classes_used:
+        nodes.append({'id': 'c:' + c, 'k': 'class', 't': c, 'c': c, 's': 'a class in the back catalog'})
+    for y in sorted(years):
+        nodes.append({'id': 'y' + y, 'k': 'year', 't': y, 'y': y, 's': 'a year'})
+    data = json.dumps({'nodes': nodes, 'links': links}, ensure_ascii=False).replace('</', '<\\/')
+
+    def item(kind, title, url, external):
+        attrs = ' rel="noopener" target="_blank"' if external else ''
+        mark = ' &#8599;' if external else ''
+        name = f'<a href="{esc(url)}"{attrs}>{esc(title)}{mark}</a>' if url else esc(title)
+        return f'<li><span class="er-map-k">{kind}</span> {name}</li>'
+
+    rows = []
+    for y in sorted(years):
+        g, items = years[y], []
+        items += [item('book of poems', b['title'], b.get('buy', ''), True) for b in g['books']]
+        items += [item(f'built &middot; {esc(a["cls"])}', a['title'], a['url'], True) for a in g['built']]
+        for e in g['pieces']:
+            hosted = 'slug' in e
+            items.append(item(f'{num(e["no"])} &middot; {SHELVES[e["shelf"]][0].lower()}', e['title'],
+                              f'/writing/{e["slug"]}/' if hosted else e['url'], not hosted))
+        rows.append(f'<div class="er-map-year"><dt>{y}</dt><dd><ul>{"".join(items)}</ul></dd></div>')
+
+    body = f'''<section class="er-section er-section--first" id="map">
+<div class="er-wrap">
+<p class="er-eyebrow">The mind map</p>
+<h1 class="er-h2">How it connects.</h1>
+<p class="er-zine-count"><span><b>{len(numbered)}</b> pieces</span><span><b>{len(built)}</b> builds</span><span><b>{len(books)}</b> books</span><span><b>{len(years)}</b> years</span></p>
+<div class="er-map"></div>
+<script id="er-map-data" type="application/json">{data}</script>
+</div>
+</section>
+<section class="er-section er-section--light" id="list">
+<div class="er-wrap">
+<p class="er-eyebrow">The same thing, as a list</p>
+<h2 class="er-h2">Year by year.</h2>
+<dl class="er-map-years">
+{chr(10).join(rows)}
+</dl>
+<div class="er-actions"><a class="er-btn" href="/writing/">The zine</a><a class="er-btn er-btn--ghost" href="/#built">The back catalog</a></div>
+</div>
+</section>'''
+    desc = 'A map of everything Elliot Roth has written and built, connected by year and by kind.'
+    return page('Mind map', desc, '/mind/', body, scripts=('/assets/vendor/d3-7.9.0.min.js', '/assets/er-show.js'))
 
 
 def feed(pieces):
@@ -543,7 +757,7 @@ def feed(pieces):
 <title>Elliot Roth: writing</title>
 <link>{SITE}/writing/</link>
 <atom:link href="{SITE}/writing/feed.xml" rel="self" type="application/rss+xml"/>
-<description>Essays, short fiction, field notes and personal pieces.</description>
+<description>Essays, short fiction, poems, field notes and personal pieces.</description>
 <language>en-us</language>
 {chr(10).join(items)}
 </channel>
@@ -555,7 +769,9 @@ def sitemap(pieces):
     path = os.path.join(ROOT, 'sitemap.xml')
     text = open(path, encoding='utf-8').read()
     text = re.sub(r'  <url>\s*<loc>' + re.escape(SITE) + r'/writing/[^<]*</loc>.*?</url>\n', '', text, flags=re.S)
-    add = [('/writing/', '0.8')] + [(f'/writing/{p["slug"]}/', '0.6') for p in sorted(pieces, key=lambda p: p['no'])]
+    text = re.sub(r'  <url>\s*<loc>' + re.escape(SITE) + r'/mind/</loc>.*?</url>\n', '', text, flags=re.S)
+    add = ([('/writing/', '0.8'), ('/mind/', '0.5')]
+           + [(f'/writing/{p["slug"]}/', '0.6') for p in sorted(pieces, key=lambda p: p['no'])])
     block = ''.join(f'  <url>\n    <loc>{SITE}{u}</loc>\n    <changefreq>monthly</changefreq>\n'
                     f'    <priority>{pr}</priority>\n  </url>\n' for u, pr in add)
     write('sitemap.xml', text.replace('</urlset>', block + '</urlset>'))
@@ -567,7 +783,8 @@ def homepage_strip(pieces):
     start, end = '<!-- writing:latest -->', '<!-- /writing:latest -->'
     if start not in text:
         return
-    latest = sorted(pieces, key=lambda p: (p['date'], p['no']), reverse=True)[:3]
+    # prose only: a poem's date is its book's, so a book would take all three cards at once
+    latest = sorted([p for p in pieces if p['shelf'] != 'poetry'], key=lambda p: (p['date'], p['no']), reverse=True)[:3]
     cards = ''.join(f'''<a class="er-zine-card" href="/writing/{p['slug']}/">
 <span class="er-zine-card-k">{num(p['no'])} &middot; {SHELVES[p['shelf']][0].lower()}</span>
 <span class="er-zine-card-t">{esc(p['title'])}</span>
@@ -582,7 +799,7 @@ def homepage_strip(pieces):
 <p class="er-lede">What I&rsquo;ve been writing down. Essays, short fiction, field notes.</p>
 </div>
 <div class="er-zine-cards">{cards}</div>
-<div class="er-actions"><a class="er-btn er-btn--ghost" href="/writing/">Every piece</a></div>
+<div class="er-actions"><a class="er-btn er-btn--ghost" href="/writing/">Every piece</a><a class="er-btn er-btn--ghost" href="/mind/">The mind map</a></div>
 </div>
 </section>
 {end}'''
@@ -591,15 +808,16 @@ def homepage_strip(pieces):
 
 
 def main():
-    pieces, elsewhere, desk = load()
+    pieces, elsewhere, desk, books = load()
     order = sorted(pieces, key=lambda p: p['no'])
     total = max([p['no'] for p in pieces] + [e['no'] for e in elsewhere if 'no' in e])
     for i, p in enumerate(order):
         prev = order[i - 1] if i else None
         nxt = order[i + 1] if i + 1 < len(order) else None
         write(f'writing/{p["slug"]}/index.html', piece_page(p, total, prev, nxt))
-    write('writing/index.html', index_page(pieces, elsewhere, desk))
+    write('writing/index.html', index_page(pieces, elsewhere, desk, books))
     write('writing/feed.xml', feed(pieces))
+    write('mind/index.html', mind_page(pieces, elsewhere, books))
     sitemap(pieces)
     homepage_strip(pieces)
     known = {p['slug'] for p in pieces} | {'_src'}

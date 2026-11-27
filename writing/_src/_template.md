@@ -17,7 +17,13 @@ draft line when it is ready, then run
 It gives the piece the next number, builds its page, and refreshes the
 index, the feed, the sitemap and the homepage strip.
 
-shelf is one of: essays, fiction, field-notes, personal.
+shelf is one of: essays, fiction, poetry, field-notes, personal.
+A poem (shelf: poetry) is typed as it should break: one line per line, a
+blank line between stanzas, no Markdown. Add `book: <key>` if it comes from
+a book listed in writing/_src/books.json. Inside a poem, two or more spaces
+make a gap that wide, a stanza that starts with a line reading [right] is set
+flush right, and a line that starts with [spread] is spread across the page
+at its gaps.
 For a story written from a prompt, add a line `prompt: the prompt` up top.
 If it first ran somewhere else, add `origin: Medium` and `origin_url: <link>`.
 

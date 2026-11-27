@@ -26,6 +26,11 @@
   force = true
 
 [[redirects]]
+  from = "/mind"
+  to = "/mind/"
+  status = 301
+
+[[redirects]]
   from = "/portfolio"
   to = "/portfolio/"
   status = 301
