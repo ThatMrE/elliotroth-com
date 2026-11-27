@@ -52,8 +52,8 @@ Elliot asks for them by name.
 The one part of the site that is generated. Sources live in `writing/_src/`;
 `python3 scripts/build_writing.py` (stdlib only, run from the repo root) turns
 them into `writing/index.html`, `writing/<slug>/index.html`, `writing/feed.xml`,
-the `/writing/` entries in `sitemap.xml`, and the homepage strip between the
-`<!-- writing:latest -->` markers. The output is committed; Netlify runs no
+the `/writing/` entries in `sitemap.xml`, the homepage strip between the
+`<!-- writing:latest -->` markers, and the mind map at `mind/index.html`. The output is committed; Netlify runs no
 build. Never hand-edit the generated files — edit the source and rebuild.
 
 - **A new piece:** copy `writing/_src/_template.md`, follow the notes in it,
@@ -73,6 +73,12 @@ build. Never hand-edit the generated files — edit the source and rebuild.
   Elliot has picked go up, and each book is kept under a tenth of its words
   here until he says the ebook isn't exclusive to a store. Book facts (month,
   dedication, epigraph) come from the books' own front pages.
+- **The mind map** (`/mind/`) is built from what the site already lists: the
+  numbered pieces, `books.json`, and the `.er-artifact` cards the generator
+  reads out of `index.html`. Its links are shared years, shelves, books and
+  classes, nothing else. Change a card on the homepage and rebuild; never add
+  a node by hand. The year-by-year list under the graph is the same data and
+  is the whole page when scripts are off.
 - **Work in progress** (Sanderson-style progress bars): create
   `writing/_src/desk.json` as `[{"title": "…", "percent": 40, "note": "…"}]`.
   No file, no section. Only Elliot's real numbers go in it.
@@ -82,8 +88,8 @@ build. Never hand-edit the generated files — edit the source and rebuild.
 
 ## The show and the musical layer (`assets/er-show.js`)
 
-Progressive enhancement on the homepage, `/contact/`, `/writing/` and the poem
-pages; every page is complete without it. d3 is the one library, vendored as
+Progressive enhancement on the homepage, `/contact/`, `/writing/`, `/mind/` and
+the poem pages; every page is complete without it. d3 is the one library, vendored as
 `assets/vendor/d3-7.9.0.min.js` (licence beside it) and loaded `defer` before
 the show script — never from a CDN, never a newer build without reason.
 
@@ -101,6 +107,9 @@ the show script — never from a CDN, never a newer build without reason.
   Every line carries its poem's number and the card says a machine dealt it.
   It only reorders Elliot's lines: it never writes one, and a cut-up is never
   presented as a poem of his.
+- **The conductor** on `/mind/` ("Follow a train of thought") walks the graph
+  from node to neighbour, a different route each time, and carries on from
+  wherever the visitor points. It starts only on a press, never by itself.
 - **Sound follows the toggle; motion follows `prefers-reduced-motion`.** Under
   reduced motion, notes still play but nothing hops, flies or sweeps.
 - The keyboard toy ignores keys with modifiers, held keys, and anything typed
@@ -114,7 +123,7 @@ There is no test suite. Serve locally and check the rendered result:
 python3 -m http.server 8899
 ```
 
-Then, across `/index.html`, `/portfolio/`, `/portfolio/websites/`,
+Then, across `/index.html`, `/mind/`, `/portfolio/`, `/portfolio/websites/`,
 `/contact/`, `/404.html`, `/writing/` and every `/writing/<slug>/`:
 
 - no horizontal page scroll at 1280, 768, 390 and 360

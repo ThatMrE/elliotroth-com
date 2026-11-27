@@ -950,4 +950,192 @@
     deal.addEventListener('click', draw);
     draw();
   })();
+
+  /* ---- the mind map ----
+     A force-directed graph of everything the site already lists: each
+     piece of writing, each book, each card in the back catalog, held
+     together by the year it belongs to and by its shelf or class. Time
+     runs left to right (top to bottom on a phone). Nothing is added
+     here; the generator prints the nodes and links into #er-map-data.
+
+     Pointing at a node sounds it and names it in the card underneath.
+     Play is the conductor: it follows a train of thought, stepping from
+     a node to one of its neighbours, a different walk every time, and
+     if you point somewhere else it carries on from there. */
+  var mapEl = doc.querySelector('.er-map'), mapData = doc.getElementById('er-map-data');
+  if (d3 && mapEl && mapData) (function () {
+    var data;
+    try { data = JSON.parse(mapData.textContent); } catch (e) { return; }
+    var nodes = data.nodes, byId = {};
+    nodes.forEach(function (n) { byId[n.id] = n; n.near = []; });
+    var links = data.links.map(function (l) { return { source: byId[l[0]], target: byId[l[1]] }; })
+      .filter(function (l) { return l.source && l.target; });
+    links.forEach(function (l) { l.source.near.push(l.target); l.target.near.push(l.source); });
+    var years = nodes.filter(function (n) { return n.k === 'year'; }).map(function (n) { return n.t; }).sort();
+    var DRUM = { wet: 'kick', hard: 'snare', infra: 'hat' }, BASE = { wet: 0, hard: 5, infra: 10 };
+    var maxW = d3.max(nodes, function (n) { return n.w || 0; }) || 1;
+    var pitch = d3.scaleQuantize().domain([Math.sqrt(maxW), 0]).range(d3.range(3, 18));
+    function hub(n) { return n.k === 'year' || n.k === 'shelf' || n.k === 'class'; }
+    function size(n) {
+      if (n.k === 'piece') return n.here ? 4.5 + Math.sqrt(n.w) / 8 : 4;
+      return n.k === 'build' ? 8 : n.k === 'book' ? 10 : n.k === 'year' ? 5 : 4;
+    }
+
+    var bar = doc.createElement('div');
+    bar.className = 'er-map-bar';
+    bar.innerHTML = '<button class="er-btn er-map-play" type="button" aria-pressed="false">Follow a train of thought</button>' +
+      '<p class="er-map-key">Dots are writing, bigger when longer. Diamonds are things I built. Squares are the books. <span class="er-map-way"></span></p>';
+    var stage = doc.createElement('div');
+    stage.className = 'er-map-stage';
+    stage.setAttribute('aria-hidden', 'true');
+    var card = doc.createElement('p');
+    card.className = 'er-map-card';
+    card.textContent = 'Point at a dot.';
+    mapEl.appendChild(bar); mapEl.appendChild(stage); mapEl.appendChild(card);
+    var play = bar.querySelector('.er-map-play'), way = bar.querySelector('.er-map-way');
+
+    var svg = d3.select(stage).append('svg').attr('class', 'er-map-svg').attr('focusable', 'false');
+    var gLinks = svg.append('g'), gNodes = svg.append('g'), tip = svg.append('text').attr('class', 'er-map-tip');
+    var line = gLinks.selectAll('line').data(links).join('line').attr('class', 'er-map-link');
+    var node = gNodes.selectAll('g').data(nodes).join('g')
+      .attr('class', function (n) { return 'er-map-node er-map-node--' + n.k + (n.k === 'piece' && !n.here ? ' er-map-node--away' : ''); });
+    node.each(function (n) {
+      var g = d3.select(this), r = size(n);
+      if (n.k === 'build') g.append('rect').attr('x', -r * 0.8).attr('y', -r * 0.8).attr('width', r * 1.6).attr('height', r * 1.6).attr('transform', 'rotate(45)');
+      else if (n.k === 'book') g.append('rect').attr('x', -r).attr('y', -r).attr('width', r * 2).attr('height', r * 2);
+      else g.append('circle').attr('r', r);
+      if (hub(n) || n.k === 'book') g.append('text').attr('class', 'er-map-label').attr('y', -r - 6).attr('text-anchor', 'middle').text(n.t);
+    });
+
+    var W = 0, H = 0, tall = false, sim = null;
+    function along(n) { /* where a node's year puts it, 0 to 1; hubs without a year float */
+      var i = years.indexOf(n.y);
+      return i < 0 ? 0.5 : (years.length > 1 ? i / (years.length - 1) : 0.5);
+    }
+    function place() {
+      node.attr('transform', function (n) {
+        var edge = tall ? 46 : 48; /* room for a label centred on the node */
+        n.x = Math.max(edge, Math.min(W - edge, n.x));
+        n.py = Math.max(28, Math.min(H - 16, n.py));
+        return 'translate(' + n.x + ',' + n.py + ')';
+      });
+      line.attr('x1', function (l) { return l.source.x; }).attr('y1', function (l) { return l.source.py; })
+        .attr('x2', function (l) { return l.target.x; }).attr('y2', function (l) { return l.target.py; });
+      if (sel) tip.attr('x', Math.max(70, Math.min(W - 70, sel.x))).attr('y', sel.py - size(sel) - 10);
+    }
+    /* d3-force wants x and y; the data already uses y for the year, so the
+       simulation runs on proxies and copies the vertical back as py */
+    var bodies = nodes.map(function (n) { return { n: n }; }), bodyOf = new Map();
+    bodies.forEach(function (b) { bodyOf.set(b.n, b); });
+    var springs = links.map(function (l) { return { source: bodyOf.get(l.source), target: bodyOf.get(l.target) }; });
+    function sync() { bodies.forEach(function (b) { b.n.x = b.x; b.n.py = b.y; }); place(); bodies.forEach(function (b) { b.x = b.n.x; b.y = b.n.py; }); }
+    function layout() {
+      W = stage.clientWidth || 600;
+      tall = W < 620;
+      H = tall ? 900 : Math.round(Math.min(620, Math.max(460, W * 0.5)));
+      svg.attr('viewBox', '0 0 ' + W + ' ' + H).attr('width', W).attr('height', H);
+      way.textContent = tall ? 'Years run top to bottom.' : 'Years run left to right.';
+      var pad = tall ? 50 : 70;
+      var t = function (b) { return pad + along(b.n) * ((tall ? H : W) - pad * 2); };
+      bodies.forEach(function (b) {
+        if (b.x == null) { b.x = tall ? W / 2 + (Math.random() - 0.5) * 80 : t(b); b.y = tall ? t(b) : H / 2 + (Math.random() - 0.5) * 80; }
+      });
+      var pull = function (b) { return b.n.k === 'year' ? 1 : (b.n.k === 'shelf' || b.n.k === 'class') ? 0 : 0.12; };
+      if (sim) sim.stop();
+      sim = d3.forceSimulation(bodies)
+        .force('link', d3.forceLink(springs).distance(tall ? 38 : 48).strength(0.3))
+        .force('charge', d3.forceManyBody().strength(tall ? -85 : -150))
+        .force('collide', d3.forceCollide(function (b) { return size(b.n) + 5; }))
+        .force('time', (tall ? d3.forceY(t) : d3.forceX(t)).strength(pull))
+        .force('cross', (tall ? d3.forceX(W / 2) : d3.forceY(H / 2)).strength(function (b) { return b.n.k === 'year' ? 0.5 : 0.025; }))
+        .on('tick', sync);
+      if (!show.motion) { sim.stop(); for (var i = 0; i < 320; i++) sim.tick(); sync(); } /* settle out of sight */
+    }
+
+    var sel = null, walking = 0, hereNode = null, seen = [], steps = 0;
+    function sing(n) {
+      if (n.k === 'piece') {
+        synth.tone(synth.freq(n.here ? pitch(Math.sqrt(n.w)) : 17), { wave: n.here ? 'triangle' : 'sine', dur: 0.3, vel: n.here ? 0.34 : 0.14 });
+      } else if (n.k === 'build') {
+        synth.drum(DRUM[n.c] || 'hat');
+        synth.tone(synth.freq((BASE[n.c] || 0) + years.indexOf(n.y) % 5 + 3), { wave: 'square', dur: 0.22, vel: 0.2 });
+      } else if (n.k === 'book') {
+        synth.tone(synth.freq(5), { wave: 'triangle', dur: 0.6, vel: 0.3 });
+        synth.tone(synth.freq(9), { wave: 'triangle', dur: 0.6, vel: 0.24, at: 0.09 });
+      } else if (n.k === 'year') {
+        synth.tone(synth.freq(years.indexOf(n.t)), { wave: 'sine', dur: 0.5, vel: 0.3 });
+      } else {
+        synth.tone(synth.freq(0), { wave: 'sine', dur: 0.5, vel: 0.26 });
+        synth.tone(synth.freq(3), { wave: 'sine', dur: 0.5, vel: 0.2, at: 0.06 });
+      }
+    }
+    function describe(n) {
+      var kind = n.k === 'piece' ? 'no. ' + String(n.no).padStart(3, '0') + ' · ' + n.s + ' · ' + n.y
+        : n.k === 'build' ? 'built · ' + n.s + ' · ' + n.y
+        : n.k === 'book' ? n.s
+        : n.s + ' · ' + n.near.length + ' connected';
+      card.textContent = '';
+      var k = doc.createElement('span');
+      k.className = 'er-map-card-k';
+      k.textContent = kind;
+      var t = doc.createElement(n.u ? 'a' : 'span');
+      t.className = 'er-map-card-t';
+      t.textContent = n.t + (n.u && n.x ? ' ↗' : '');
+      if (n.u) { t.href = n.u; if (n.x) { t.target = '_blank'; t.rel = 'noopener'; } }
+      card.appendChild(k); card.appendChild(t);
+    }
+    function select(n, quiet) {
+      if (!n || (n === sel && !quiet)) return;
+      sel = n;
+      node.classed('is-on', function (m) { return m === n; }).classed('is-near', function (m) { return n.near.indexOf(m) >= 0; });
+      line.classed('is-on', function (l) { return l.source === n || l.target === n; });
+      tip.text(hub(n) || n.k === 'book' ? '' : (n.t.length > 34 ? n.t.slice(0, 32) + '…' : n.t));
+      place();
+      describe(n);
+      if (!quiet) sing(n);
+    }
+
+    function stop() {
+      clearTimeout(walking); walking = 0;
+      play.setAttribute('aria-pressed', 'false');
+      play.textContent = 'Follow a train of thought';
+    }
+    function step() {
+      var fresh = hereNode.near.filter(function (m) { return seen.indexOf(m) < 0; });
+      var from = fresh.length ? fresh : hereNode.near;
+      if (!from.length || steps >= 40) { stop(); return; }
+      hereNode = from[Math.floor(Math.random() * from.length)];
+      seen.push(hereNode); steps++;
+      sel = null; select(hereNode);
+      walking = setTimeout(step, hub(hereNode) ? 320 : 560);
+    }
+    play.addEventListener('click', function () {
+      if (walking) { stop(); return; }
+      play.setAttribute('aria-pressed', 'true');
+      play.textContent = 'Stop';
+      if (show.sound) synth.ctx();
+      var leaves = nodes.filter(function (n) { return !hub(n); });
+      hereNode = sel && !hub(sel) ? sel : leaves[Math.floor(Math.random() * leaves.length)];
+      seen = [hereNode]; steps = 0;
+      sel = null; select(hereNode);
+      walking = setTimeout(step, 560);
+    });
+
+    function point(n) { select(n); if (walking) { hereNode = n; if (seen.indexOf(n) < 0) seen.push(n); } }
+    node.on('pointerenter', function (e, n) { if (e.pointerType === 'mouse') point(n); })
+      .on('click', function (e, n) { sel = null; point(n); });
+    node.call(d3.drag()
+      .subject(function (e, n) { var b = bodyOf.get(n); return { x: b.x, y: b.y }; }) /* n.y is the year, not a coordinate */
+      .on('start', function (e, n) { var b = bodyOf.get(n); if (show.motion) sim.alphaTarget(0.25).restart(); b.fx = b.x; b.fy = b.y; })
+      .on('drag', function (e, n) { var b = bodyOf.get(n); b.fx = e.x; b.fy = e.y; if (!show.motion) { b.x = e.x; b.y = e.y; sync(); } })
+      .on('end', function (e, n) { var b = bodyOf.get(n); if (show.motion) sim.alphaTarget(0); b.fx = null; b.fy = null; }));
+
+    layout();
+    var rz = 0, lastW = W;
+    window.addEventListener('resize', function () {
+      clearTimeout(rz);
+      rz = setTimeout(function () { if ((stage.clientWidth || 600) !== lastW) { layout(); lastW = W; if (show.motion) sim.alpha(0.6).restart(); } }, 180);
+    });
+    show.onMotion.push(function (m) { if (!m) { sim.stop(); stop(); } });
+  })();
 })();

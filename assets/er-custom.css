@@ -4038,3 +4038,148 @@ html:not(.er-js) .er-cut { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .er-section .er-poem .er-line { transition: none; }
 }
+
+/* =========================================================
+   THE MIND MAP — /mind/, drawn by er-show.js from the generator's
+   JSON. Writing is acid dots, builds are magenta diamonds, books are
+   paper squares; years, shelves and classes are small labelled rings.
+   Shape carries the meaning as well as colour. Without scripts the
+   graph is absent and the year-by-year list below it is the page.
+   ========================================================= */
+
+.er-map { margin: 28px 0 0; }
+html:not(.er-js) .er-map { display: none; }
+
+.er-map-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 44px;
+  margin-bottom: 14px;
+}
+
+.er-section .er-map-key {
+  margin: 0;
+  max-width: 54ch;
+  font-family: var(--er-mono);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: var(--er-muted);
+}
+
+.er-map-stage { border: 1px dashed rgba(255, 255, 255, 0.2); touch-action: pan-y; }
+.er-map-svg { display: block; overflow: visible; }
+
+.er-map-link { stroke: rgba(255, 255, 255, 0.16); stroke-width: 1; }
+.er-map-link.is-on { stroke: var(--er-acid); stroke-width: 1.8; }
+
+.er-map-node { cursor: pointer; }
+.er-map-node circle,
+.er-map-node rect { stroke: #0b0b0b; stroke-width: 1.5; transition: stroke 0.1s ease; }
+.er-map-node--piece circle { fill: var(--er-acid); }
+.er-map-node--away circle { fill: #0b0b0b; stroke: var(--er-acid); stroke-dasharray: 2 2; }
+.er-map-node--build rect { fill: var(--er-hot); }
+.er-map-node--book rect { fill: var(--er-paper); }
+.er-map-node--year circle,
+.er-map-node--shelf circle,
+.er-map-node--class circle { fill: #0b0b0b; stroke: rgba(255, 255, 255, 0.7); }
+.er-map-node.is-near circle,
+.er-map-node.is-near rect { stroke: var(--er-paper); stroke-dasharray: none; }
+.er-map-node.is-on circle,
+.er-map-node.is-on rect { stroke: #fff; stroke-width: 3.5; stroke-dasharray: none; }
+
+.er-map-label,
+.er-map-tip {
+  font-family: var(--er-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  fill: rgba(255, 255, 255, 0.78);
+  paint-order: stroke;
+  stroke: #0b0b0b;
+  stroke-width: 4px;
+  pointer-events: none;
+}
+
+.er-map-node--year .er-map-label { fill: var(--er-acid); font-size: 12px; }
+.er-map-node--book .er-map-label { fill: var(--er-paper); text-transform: uppercase; }
+.er-map-tip { fill: #fff; font-size: 12px; text-anchor: middle; }
+
+/* the card under the graph: what you are pointing at, with its link */
+.er-section .er-map-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 4.6em;
+  margin: 16px 0 0;
+  font-family: var(--er-mono);
+  font-size: 0.8rem;
+  color: var(--er-muted);
+}
+
+.er-section .er-map-card .er-map-card-k {
+  display: block;
+  font-family: var(--er-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--er-acid);
+}
+
+.er-section .er-map-card .er-map-card-t {
+  display: block;
+  font-family: var(--er-sans);
+  font-size: clamp(1.3rem, 3.4vw, 1.9rem);
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.er-map-card a.er-map-card-t { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.er-map-card a.er-map-card-t:hover { color: var(--er-acid); }
+
+/* ---- the same map as a list, year by year ---- */
+.er-map-years { margin: 26px 0 30px; }
+
+.er-map-year {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 4px 18px;
+  padding: 14px 0;
+  border-top: 1px dashed rgba(20, 16, 10, 0.25);
+}
+
+.er-section .er-map-year dt {
+  font-family: var(--er-sans);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #14100a;
+}
+
+.er-map-year dd { margin: 0; }
+.er-map-year ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.er-section .er-map-year li { font-size: 1rem; line-height: 1.4; color: #14100a; }
+.er-map-year a { color: #8a0038; }
+
+.er-section .er-map-year .er-map-k {
+  display: inline-block;
+  min-width: 13rem;
+  margin-right: 8px;
+  font-family: var(--er-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  color: rgba(20, 16, 10, 0.68);
+}
+
+@media (max-width: 560px) {
+  .er-map-year { grid-template-columns: 1fr; }
+  .er-section .er-map-year .er-map-k { display: block; min-width: 0; margin: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .er-map-node circle, .er-map-node rect { transition: none; }
+}
