@@ -97,7 +97,8 @@ def load():
             fail(f'{p["path"]}: shelf must be one of essays, fiction, poetry, field-notes, personal')
         p['no'] = int(p['no'])
         if p['shelf'] == 'poetry':  # verse keeps its line breaks; no markdown is read inside it
-            p['html'], p['lines'] = render_poem(p['body'])
+            p['html'], p['verse'] = render_poem(p['body'])
+            p['lines'] = len(p['verse'])
             if p.get('book'):
                 if p['book'] not in by_key:
                     fail(f'{p["path"]}: book "{p["book"]}" is not a key in writing/_src/books.json')
@@ -229,16 +230,16 @@ def render(md, slug=''):
 
 def render_poem(text):
     """Verse: a blank line ends a stanza, every other line break is kept, and
-    leading spaces are kept as indentation. Returns (html, number of lines)."""
-    stanzas, n = [], 0
+    leading spaces are kept as indentation. Returns (html, the lines)."""
+    stanzas, verse = [], []
     for block in re.split(r'\n[ \t]*\n', text.strip('\n')):
         lines = [l.rstrip().expandtabs(4) for l in block.split('\n') if l.strip()]
         if not lines:
             continue
-        n += len(lines)
+        verse += lines
         stanzas.append('<p class="er-stanza">'
                        + '<br/>\n'.join(f'<span class="er-line">{esc(l)}</span>' for l in lines) + '</p>')
-    return '<div class="er-poem">\n' + '\n'.join(stanzas) + '\n</div>', n
+    return '<div class="er-poem">\n' + '\n'.join(stanzas) + '\n</div>', verse
 
 
 def count_words(md):
@@ -510,6 +511,13 @@ def books_section(books, pieces):
 {poems}
 {buy}
 </article>''')
+    # the poem randomizer: er-show.js deals a cut-up from these lines (see "the cut-up" there)
+    verse = [{'no': p['no'], 't': p['title'], 'u': f'/writing/{p["slug"]}/', 'lines': [l.strip() for l in p['verse']]}
+             for p in sorted(pieces, key=lambda p: p['no']) if p['shelf'] == 'poetry']
+    if len(verse) > 1:
+        data = json.dumps(verse, ensure_ascii=False).replace('</', '<\\/')
+        cards.append(f'<article class="er-book er-cut" id="randomizer"></article>\n'
+                     f'<script id="er-poem-data" type="application/json">{data}</script>')
     count = {1: 'One book', 2: 'Two books', 3: 'Three books'}.get(len(books), f'{len(books)} books')
     return f'''<section class="er-section er-section--tint" id="books">
 <div class="er-wrap">

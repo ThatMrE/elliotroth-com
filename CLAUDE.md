@@ -96,6 +96,11 @@ the show script — never from a CDN, never a newer build without reason.
   word counts, and a poem page is its own score (each line a bar, each
   syllable a note, the five vowels the five notes of the scale). Don't feed
   them invented numbers.
+- **The poem randomizer** on `/writing/` deals a cut-up from the lines of the
+  poems already on the site (the generator prints them into `#er-poem-data`).
+  Every line carries its poem's number and the card says a machine dealt it.
+  It only reorders Elliot's lines: it never writes one, and a cut-up is never
+  presented as a poem of his.
 - **Sound follows the toggle; motion follows `prefers-reduced-motion`.** Under
   reduced motion, notes still play but nothing hops, flies or sweeps.
 - The keyboard toy ignores keys with modifiers, held keys, and anything typed

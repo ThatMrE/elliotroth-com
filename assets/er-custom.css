@@ -4000,6 +4000,41 @@ html:not(.er-js) .er-wave { display: none; }
 .er-book-poems a { color: #8a0038; }
 .er-section .er-book .er-sub-links { margin: auto 0 0; padding-top: 4px; }
 
+/* ---- the poem randomizer: a third card, dealt by er-show.js ---- */
+.er-cut { grid-column: 1 / -1; }
+html:not(.er-js) .er-cut { display: none; }
+.er-cut .er-poem-bar { margin: 4px 0 0; gap: 14px 30px; }
+.er-cut .er-prose--poem { min-height: 17em; padding-top: 6px; }
+/* the card is paper inside a dark band: the verse is ink, not the band's white */
+.er-section .er-cut .er-stanza { color: #14100a; }
+
+.er-section .er-cut-note { margin: 0; max-width: 52ch; font-size: 1rem; line-height: 1.5; color: rgba(20, 16, 10, 0.82); }
+
+/* every dealt line carries the number of the poem it came from */
+.er-section .er-poem--cut .er-line::after {
+  content: attr(data-no);
+  margin-left: 0.9em;
+  font-family: var(--er-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: rgba(20, 16, 10, 0.68);
+}
+
+.er-section .er-poem--cut .er-line--on::after { color: var(--er-paper); }
+
+.er-section .er-cut-src {
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(20, 16, 10, 0.25);
+  font-family: var(--er-mono);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  text-transform: lowercase;
+  color: rgba(20, 16, 10, 0.72);
+}
+
+.er-cut-src a { color: #8a0038; }
+
 @media (prefers-reduced-motion: reduce) {
   .er-section .er-poem .er-line { transition: none; }
 }
