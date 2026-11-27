@@ -11,7 +11,7 @@ writing/_src/. It reads
                                  posts and the Substack dispatches
     writing/_src/desk.json       optional: works in progress, shown as
                                  progress bars (see CLAUDE.md)
-    writing/_src/books.json      optional: the books a poem can belong to
+    writing/_src/books.json      optional: the books (a poem can belong to one; they also fill the book shelves)
 
 and writes plain HTML that is committed like every other page:
 
@@ -509,29 +509,61 @@ def desk_section(desk):
 </section>'''
 
 
+def book_card(b, pieces, full=True):
+    """One card on the merch table. A book that is out has `published` and usually `buy`;
+    a book still being written has `status` and `site` instead. `full` adds the contents
+    list (the /writing/ index); the homepage shelf leaves it out."""
+    here = sorted([p for p in pieces if p.get('book') is b], key=lambda p: p['no'])
+    when = long_date(b['published']).lower() if b.get('published') else esc(b.get('status', 'in progress'))
+    long_title = max(len(w) for w in b['title'].split()) > 9
+    sub = f'<p class="er-book-sub">{esc(b["subtitle"])}</p>' if b.get('subtitle') else ''
+    line = (f'<p class="er-book-line">{"<br/>".join(esc(l) for l in b["line"].split(chr(10)))}</p>'
+            if b.get('line') else '')
+    poems = ''
+    if here:
+        first = f'<span><a href="/writing/{here[0]["slug"]}/">start at the first &rarr;</a></span>'
+        count = f'<span>{len(here)} {"poem" if len(here) == 1 else "poems"}, all here</span>'
+        poems = f'<p class="er-label">{count}{first}</p>'
+        if full:
+            links = ''.join(f'<li><a href="/writing/{p["slug"]}/">{esc(p["title"])}</a></li>' for p in here)
+            poems += f'<details class="er-book-toc"><summary>Contents</summary><ol class="er-book-poems">{links}</ol></details>'
+    out = []
+    if b.get('buy'):
+        out.append(f'<a href="{esc(b["buy"])}" rel="noopener" target="_blank">get the book on '
+                   f'{esc(b.get("store", "sale").lower())} &#8599;</a>')
+    if b.get('site'):
+        out.append(f'<a href="{esc(b["site"])}" rel="noopener" target="_blank">{esc(b.get("cta", "see the book"))} &#8599;</a>')
+    links_out = f'<p class="er-sub-links">{"".join(out)}</p>' if out else ''
+    return f"""<article class="er-book">
+<p class="er-label"><span>{esc(b.get('kind', 'book'))}</span><span>{when}</span></p>
+<h3 class="er-book-t{' er-book-t--long' if long_title else ''}">{esc(b['title'])}</h3>
+{sub}
+{line}
+{poems}
+{links_out}
+</article>"""
+
+
+def books_grid(books):
+    """Four books sit two by two on a wide screen, so the fourth isn't left alone on a row."""
+    return 'er-books er-books--pairs' if len(books) % 2 == 0 and len(books) > 2 else 'er-books'
+
+
+def books_heading(books):
+    """Counts only what books.json says: how many books, how many are out."""
+    words = {1: 'One', 2: 'Two', 3: 'Three', 4: 'Four', 5: 'Five', 6: 'Six'}
+    n, out = len(books), len([b for b in books if b.get('published')])
+    count = f'{words.get(n, n)} {"book" if n == 1 else "books"}'
+    if out == n:
+        return f'{count} of poems.' if all(b.get('kind', 'poems') == 'poems' for b in books) else f'{count}.'
+    w = lambda k: str(words.get(k, k)).lower() if k else 'none'
+    return f'{count}. {w(out).capitalize()} out, {w(n - out)} on the way.'
+
+
 def books_section(books, pieces):
     if not books:
         return ''
-    cards = []
-    for b in books:
-        here = sorted([p for p in pieces if p.get('book') is b], key=lambda p: p['no'])
-        poems = ''
-        if here:
-            links = ''.join(f'<li><a href="/writing/{p["slug"]}/">{esc(p["title"])}</a></li>' for p in here)
-            poems = (f'<p class="er-label"><span>{len(here)} {"poem" if len(here) == 1 else "poems"}, all here</span>'
-                     f'<span><a href="/writing/{here[0]["slug"]}/">start at the first &rarr;</a></span></p>'
-                     f'<details class="er-book-toc"><summary>Contents</summary><ol class="er-book-poems">{links}</ol></details>')
-        line = (f'<p class="er-book-line">{"<br/>".join(esc(l) for l in b["line"].split(chr(10)))}</p>'
-                if b.get('line') else '')
-        buy = (f'<p class="er-sub-links"><a href="{esc(b["buy"])}" rel="noopener" target="_blank">get the book on '
-               f'{esc(b.get("store", "sale").lower())} &#8599;</a></p>') if b.get('buy') else ''
-        cards.append(f'''<article class="er-book">
-<p class="er-label"><span>poems</span><span>{long_date(b['published']).lower()}</span></p>
-<h3 class="er-book-t">{esc(b['title'])}</h3>
-{line}
-{poems}
-{buy}
-</article>''')
+    cards = [book_card(b, pieces) for b in books]
     # the poem randomizer: er-show.js deals a cut-up from these lines (see "the cut-up" there)
     verse = [{'no': p['no'], 't': p['title'], 'u': f'/writing/{p["slug"]}/', 'lines': p['verse']}
              for p in sorted(pieces, key=lambda p: p['no']) if p['shelf'] == 'poetry']
@@ -539,14 +571,13 @@ def books_section(books, pieces):
         data = json.dumps(verse, ensure_ascii=False).replace('</', '<\\/')
         cards.append(f'<article class="er-book er-cut" id="randomizer"></article>\n'
                      f'<script id="er-poem-data" type="application/json">{data}</script>')
-    count = {1: 'One book', 2: 'Two books', 3: 'Three books'}.get(len(books), f'{len(books)} books')
-    return f'''<section class="er-section er-section--tint" id="books">
+    return f"""<section class="er-section er-section--tint" id="books">
 <div class="er-wrap">
 <p class="er-eyebrow">The books</p>
-<h2 class="er-h2">{count} of poems.</h2>
-<div class="er-books">{''.join(cards)}</div>
+<h2 class="er-h2">{books_heading(books)}</h2>
+<div class="{books_grid(books)}">{''.join(cards)}</div>
 </div>
-</section>'''
+</section>"""
 
 
 def index_page(pieces, elsewhere, desk, books=()):
@@ -644,6 +675,7 @@ def mind_page(pieces, elsewhere, books):
     every link is a shared year, shelf, book or class. er-show.js draws the graph
     from the JSON; the list under it is the same thing for readers without scripts."""
     built = catalog()
+    books = [b for b in books if b.get('published')]  # a book still being written has no year to hang on
     numbered = sorted([dict(p) for p in pieces] + [e for e in elsewhere if e.get('shelf') != 'dispatches'],
                       key=lambda e: e['no'])
     nodes, links, years = [], [], {}
@@ -807,6 +839,31 @@ def homepage_strip(pieces):
     write('index.html', text[:i] + block + text[j:])
 
 
+def homepage_books(books, pieces):
+    """The homepage's book shelf, between the <!-- books:shelf --> markers: the same cards
+    as /writing/#books without the contents lists. No markers, no section."""
+    path = os.path.join(ROOT, 'index.html')
+    text = open(path, encoding='utf-8').read()
+    start, end = '<!-- books:shelf -->', '<!-- /books:shelf -->'
+    if start not in text or not books:
+        return
+    cards = ''.join(book_card(b, pieces, full=False) for b in books)
+    block = f"""{start}
+<section class="er-section er-section--tint" id="books">
+<div class="er-wrap">
+<div class="er-head">
+<p class="er-eyebrow">The books</p>
+<h2 class="er-h2">{books_heading(books)}</h2>
+</div>
+<div class="{books_grid(books)}">{cards}</div>
+<div class="er-actions"><a class="er-btn er-btn--ghost" href="/writing/#books">Read the poems</a></div>
+</div>
+</section>
+{end}"""
+    i, j = text.index(start), text.index(end) + len(end)
+    write('index.html', text[:i] + block + text[j:])
+
+
 def main():
     pieces, elsewhere, desk, books = load()
     order = sorted(pieces, key=lambda p: p['no'])
@@ -820,6 +877,7 @@ def main():
     write('mind/index.html', mind_page(pieces, elsewhere, books))
     sitemap(pieces)
     homepage_strip(pieces)
+    homepage_books(books, pieces)
     known = {p['slug'] for p in pieces} | {'_src'}
     for d in sorted(os.listdir(OUT)):
         if os.path.isdir(os.path.join(OUT, d)) and d not in known:
