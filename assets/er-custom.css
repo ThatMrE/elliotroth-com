@@ -1774,6 +1774,15 @@ button.button {
 .er-section--light .er-kicker,
 .er-section--light .er-topic span { color: #c4004a; }
 .er-section--light .er-takeaway { border-left-color: #c4004a; background: rgba(196, 0, 74, 0.06); }
+.er-section--light p a { color: var(--er-hot-ink); }
+/* the stat slabs are a half-black panel, which goes muddy on newsprint */
+.er-section--light .er-stat {
+  background: rgba(20, 16, 10, 0.04);
+  border-top-color: #14100a;
+  box-shadow: inset 0 2px 0 #c4004a;
+}
+.er-section--light .er-stat b { color: #14100a; }
+.er-section--light .er-stat span { color: rgba(20, 16, 10, 0.82); }
 
 /* ---- the portfolio hero joins the flyer ---- */
 .er-hero-band,
