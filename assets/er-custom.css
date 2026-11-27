@@ -3901,3 +3901,105 @@ html:not(.er-js) .er-wave { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .er-toast { transition: none; transform: none; }
 }
+
+/* =========================================================
+   POETRY — verse in the zine, and the books it comes from.
+   A poem keeps its line breaks; a line too long for the column
+   wraps with a hanging indent so it still reads as one line.
+   er-show.js turns the page into a score (see "a poem is a score").
+   ========================================================= */
+
+.er-prose--poem { line-height: 1.62; }
+.er-prose .er-stanza { max-width: none; margin: 0 0 1.5em; }
+.er-poem br { display: none; }
+
+.er-section .er-poem .er-line {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0 0.3em 0 1.9em;
+  margin-left: -0.3em;
+  text-indent: -1.6em;
+  white-space: pre-wrap;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+/* the line being sung */
+.er-section .er-poem .er-line--on { background: #14100a; color: var(--er-acid); }
+
+.er-poem-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 44px; /* room for the button's scribble */
+  margin: 0 0 2.2em;
+}
+
+.er-section .er-poem-key {
+  margin: 0;
+  max-width: 44ch;
+  font-family: var(--er-mono);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: rgba(20, 16, 10, 0.72);
+}
+
+/* ---- the books: on the merch table next to the zine ---- */
+.er-books {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  margin-top: 26px;
+}
+
+.er-book {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px 22px;
+  background: var(--er-paper);
+  color: #14100a;
+  box-shadow: 4px 4px 0 var(--er-hot);
+}
+
+.er-book:nth-child(odd) { transform: rotate(-0.4deg); }
+.er-book:nth-child(even) { transform: rotate(0.4deg); }
+
+.er-section .er-book-t {
+  margin: 4px 0 0;
+  font-family: var(--er-sans);
+  font-size: clamp(1.8rem, 4.6vw, 2.6rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: #14100a;
+}
+
+.er-section .er-book-line {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: rgba(20, 16, 10, 0.82);
+}
+
+.er-book .er-label { padding-top: 10px; border-top: 1px dashed rgba(20, 16, 10, 0.25); }
+.er-book .er-label:first-child { padding-top: 0; border-top: 0; }
+
+.er-book-poems {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.er-section .er-book-poems li { font-family: var(--er-mono); font-size: 0.8rem; line-height: 1.5; }
+.er-book-poems a { color: #8a0038; }
+.er-section .er-book .er-sub-links { margin: auto 0 0; padding-top: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .er-section .er-poem .er-line { transition: none; }
+}

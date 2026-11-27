@@ -66,6 +66,13 @@ build. Never hand-edit the generated files — edit the source and rebuild.
   out. Medium titles marked `title_from_link` were rebuilt from the post URL
   and may have the wrong capitalisation; when a Medium export arrives, move
   each into its own `.md` (keeping its number) and drop its JSON entry.
+- **Poems** go on the `poetry` shelf: plain lines, a blank line ends a stanza,
+  leading spaces are kept, and no Markdown is read inside one. `book: <key>`
+  ties a poem to an entry in `writing/_src/books.json`, which also draws the
+  book cards on the index. The manuscripts stay out of the repo; only poems
+  Elliot has picked go up, and each book is kept under a tenth of its words
+  here until he says the ebook isn't exclusive to a store. Book facts (month,
+  dedication, epigraph) come from the books' own front pages.
 - **Work in progress** (Sanderson-style progress bars): create
   `writing/_src/desk.json` as `[{"title": "…", "percent": 40, "note": "…"}]`.
   No file, no section. Only Elliot's real numbers go in it.
@@ -75,8 +82,8 @@ build. Never hand-edit the generated files — edit the source and rebuild.
 
 ## The show and the musical layer (`assets/er-show.js`)
 
-Progressive enhancement on the homepage, `/contact/` and `/writing/`; every
-page is complete without it. d3 is the one library, vendored as
+Progressive enhancement on the homepage, `/contact/`, `/writing/` and the poem
+pages; every page is complete without it. d3 is the one library, vendored as
 `assets/vendor/d3-7.9.0.min.js` (licence beside it) and loaded `defer` before
 the show script — never from a CDN, never a newer build without reason.
 
@@ -86,7 +93,9 @@ the show script — never from a CDN, never a newer build without reason.
   pentatonic scale, so instruments always agree.
 - **Instruments play the site's own data**: the back-catalog drum machine
   reads the `.er-artifact` cards, the zine waveform reads the generator's
-  word counts. Don't feed them invented numbers.
+  word counts, and a poem page is its own score (each line a bar, each
+  syllable a note, the five vowels the five notes of the scale). Don't feed
+  them invented numbers.
 - **Sound follows the toggle; motion follows `prefers-reduced-motion`.** Under
   reduced motion, notes still play but nothing hops, flies or sweeps.
 - The keyboard toy ignores keys with modifiers, held keys, and anything typed

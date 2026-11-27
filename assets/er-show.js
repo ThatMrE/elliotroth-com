@@ -139,9 +139,11 @@
     var told = false;
     try { told = sessionStorage.getItem('er-told') === '1'; sessionStorage.setItem('er-told', '1'); } catch (e) {}
     if (told) return;
-    toast.textContent = doc.querySelector('.er-seq, .er-strum, .er-wave')
-      ? 'Sound on. Type any letter, sweep the headline, drag across the strings, play the catalog.'
-      : 'Sound on. Type away.';
+    toast.textContent = doc.querySelector('.er-poem')
+      ? 'Sound on. Press play, or run down the poem a line at a time. The vowels pick the notes.'
+      : doc.querySelector('.er-seq, .er-strum, .er-wave')
+        ? 'Sound on. Type any letter, sweep the headline, drag across the strings, play the catalog.'
+        : 'Sound on. Type away.';
     toast.classList.add('er-toast--on');
     setTimeout(function () { toast.classList.remove('er-toast--on'); }, 4200);
   });
@@ -752,5 +754,112 @@
     draw();
     var rz = 0;
     window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(draw, 150); });
+  })();
+
+  /* ---- a poem is a score ----
+     Each line is a bar and each syllable a note. The five vowels are
+     the five notes of the scale (a e i o u, low to high; y sings with
+     i), so a line's assonance is its melody. Long words jump an octave.
+     A line break is a short rest, a stanza break a longer one. Play
+     performs the poem top to bottom; pointing at a line, or scrolling
+     it through the middle of the screen, plays that line alone. With
+     sound off, Play still keeps the place, silently. */
+  var poem = doc.querySelector('.er-poem');
+  if (poem) (function () {
+    var UNIT = 0.15, lines = [].slice.call(poem.querySelectorAll('.er-line'));
+    if (!lines.length) return;
+    function notes(text) {
+      var out = [];
+      text.split(/\s+/).forEach(function (word) {
+        var w = word.toLowerCase().replace(/[^a-z]/g, '');
+        if (!w) { if (/\d/.test(word)) out.push(5); return; }
+        var groups = w.match(/[aeiouy]+/g) || ['e'];
+        /* the silent e of "time" and "shapes", but not of "slices" or "simple" */
+        if (groups.length > 1 && /[^aeiouyl]es?$/.test(w) && !/(s|x|z|c|g|ch|sh)es$/.test(w)) groups.pop();
+        groups.forEach(function (g) {
+          var deg = 'aeiou'.indexOf(g.charAt(0));
+          out.push(5 + (deg < 0 ? 2 : deg) + (w.length > 7 ? 5 : 0));
+        });
+      });
+      return out;
+    }
+    var score = lines.map(function (el) {
+      return { el: el, notes: notes(el.textContent), ends: !el.nextElementSibling };
+    });
+    var timer = 0, at = -1, lastRing = 0, offs = [];
+    function light(bar, secs) {
+      bar.el.classList.add('er-line--on');
+      offs.push(setTimeout(function () { bar.el.classList.remove('er-line--on'); }, secs * 1000));
+    }
+    /* sound one bar; returns how long it lasts */
+    function ring(bar, unit, cap) {
+      var n = cap ? bar.notes.slice(0, cap) : bar.notes;
+      n.forEach(function (step, i) {
+        synth.tone(synth.freq(step), { wave: 'triangle', dur: unit * 1.9, vel: i ? 0.26 : 0.34, at: i * unit });
+      });
+      var secs = Math.max(n.length, 2) * unit;
+      light(bar, secs);
+      return secs;
+    }
+    function solo(el, unit, cap) {
+      var now = Date.now();
+      if (timer || now - lastRing < 140) return;
+      var bar = score[lines.indexOf(el)];
+      if (!bar) return;
+      lastRing = now;
+      ring(bar, unit, cap);
+    }
+
+    var bar = doc.createElement('div');
+    bar.className = 'er-poem-bar';
+    bar.innerHTML = '<button class="er-btn er-poem-play" type="button" aria-pressed="false">Play the poem</button>' +
+      '<p class="er-poem-key">Each line is a bar. The vowels pick the notes: a, e, i, o, u, low to high. A line break is a rest.</p>';
+    poem.parentNode.insertBefore(bar, poem);
+    var play = bar.querySelector('.er-poem-play');
+    function stop() {
+      clearTimeout(timer); timer = 0; at = -1;
+      offs.forEach(clearTimeout); offs = [];
+      lines.forEach(function (l) { l.classList.remove('er-line--on'); });
+      play.setAttribute('aria-pressed', 'false');
+      play.textContent = 'Play the poem';
+    }
+    function step() {
+      at++;
+      if (at >= score.length) { stop(); return; }
+      var b = score[at], secs = ring(b, UNIT);
+      if (show.motion) { /* keep the sung line on screen; under reduced motion the page stays put */
+        var r = b.el.getBoundingClientRect();
+        if (r.top < 90 || r.bottom > window.innerHeight - 90) b.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+      timer = setTimeout(step, (secs + UNIT * (b.ends ? 5 : 2)) * 1000);
+    }
+    play.addEventListener('click', function () {
+      if (timer) { stop(); return; }
+      play.setAttribute('aria-pressed', 'true');
+      play.textContent = 'Stop';
+      if (show.sound) synth.ctx();
+      step();
+    });
+
+    function lineOf(t) { return t && t.closest ? t.closest('.er-line') : null; }
+    poem.addEventListener('pointerover', function (e) {
+      var l = lineOf(e.target);
+      if (l && e.pointerType === 'mouse' && show.sound) solo(l, UNIT);
+    });
+    poem.addEventListener('pointerdown', function (e) {
+      var l = lineOf(e.target);
+      if (l && show.sound) solo(l, UNIT);
+    });
+    /* scrolling: a line crossing the middle of the screen sounds its opening */
+    if ('IntersectionObserver' in window) {
+      var scrolled = false;
+      window.addEventListener('scroll', function () { scrolled = true; }, { passive: true });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting && scrolled && show.sound) solo(en.target, UNIT * 0.7, 6);
+        });
+      }, { rootMargin: '-49% 0px -49% 0px' });
+      lines.forEach(function (l) { io.observe(l); });
+    }
   })();
 })();
